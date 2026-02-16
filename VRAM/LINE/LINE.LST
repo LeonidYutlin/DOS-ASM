@@ -1,0 +1,62 @@
+Turbo Assembler	 Version 4.1	    02/10/26 19:18:24	    Page 1
+line.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4	0100			     Start:
+      5	0100  B8 B800			     mov ax, 0b800h
+      6	0103  8E C0			     mov es, ax	; es = 0b800h
+      7	0105  BB 00A0			     mov bx, 160d
+      8
+      9	0108  BA 031E			     mov dx, 5d	* 2d * 80d - 2d
+     10
+     11	010B  B9 0050			     mov cx, 80d
+     12	010E				     LOOP_BODY:
+     13	010E  8B D9			     mov bx, cx
+     14	0110  D1 E3			     shl bx, 1
+     15	0112  03 DA			     add bx, dx
+     16	0114  26: C6 07	05		     mov es:byte ptr[bx], 05h ;	using bx as an offset in es's segment,
+     17								      ;	set the	vram symbol to 05h
+     18	0118  26: C6 47	01 25		     mov es:byte ptr[bx	+ 1], 25h
+     19	011D  E2 EF			     loop LOOP_BODY
+     20
+     21	011F  B8 4C00			     mov ax, 4c00h
+     22	0122  CD 21			     int 21h
+     23
+     24				     end Start
+Turbo Assembler	 Version 4.1	    02/10/26 19:18:24	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/10/26"
+??FILENAME			  Text	 "line	  "
+??TIME				  Text	 "19:18:24"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 LINE
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+LOOP_BODY			  Near	 DGROUP:010E
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0124 Word	  Public  CODE
+

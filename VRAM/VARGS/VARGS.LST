@@ -1,0 +1,99 @@
+Turbo Assembler	 Version 4.1	    02/15/26 17:06:42	    Page 1
+vargs.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	      =B800		     VIDEOSEG equ 0b800h
+      6	      =0050		     ROW_LEN  equ 80d
+      7	      =0080		     CMD_LINE equ 80h
+      8	      =0012		     LINE_N   equ 18d
+      9	      =001E		     SHIFT    equ 30d
+     10
+     11	0100			     Start:
+     12	0100  B8 B800			     mov ax, VIDEOSEG
+     13	0103  8E C0			     mov es, ax
+     14
+     15	0105  BA 0B7C			     mov dx, LINE_N * ROW_LEN *	2d + SHIFT * 2d
+     16
+     17	0108  BB 0080			     mov bx, CMD_LINE
+     18	010B  8A 0F			     mov cl, [bx] ; command line length
+     19	010D  BE 0080			     mov si, CMD_LINE
+     20	0110  03 F1			     add si, cx
+     21	0112  84 C9			     test cl, cl
+     22	0114  74 19			     jz	MISUSAGE
+     23	0116  FE C9			     dec cl ; skip first space
+     24	0118				     LOOP_BODY:
+     25	0118  8B D9			     mov bx, cx
+     26	011A  4B			     dec bx
+     27	011B  D1 E3			     shl bx, 1
+     28	011D  03 DA			     add bx, dx
+     29	011F  8B 3C			     mov di, [si]
+     30	0121  26: 89 3F			     mov es:word ptr[bx], di
+     31	0124  26: C6 47	01 7C		     mov es:byte ptr[bx	+ 1], 7ch
+     32	0129  4E			     dec si
+     33	012A  E2 EC			     loop LOOP_BODY
+     34	012C  EB 0B 90			     jmp EXIT
+     35
+     36	012F				     MISUSAGE:
+     37	012F  B4 09			     mov ah, 09h
+     38	0131  BA 013Er			     mov dx, offset USAGE
+     39	0134  CD 21			     int 21h
+     40	0136  EB 01 90			     jmp EXIT
+     41
+     42	0139				     EXIT:
+     43	0139  B8 4C00			     mov ax, 4c00h
+     44	013C  CD 21			     int 21h
+     45
+     46	013E  55 73 61 67 65 3A	20+  USAGE db 'Usage: vargs <message>',	0ah, '$'
+     47	      76 61 72 67 73 20	3C+
+     48	      6D 65 73 73 61 67	65+
+     49	      3E 0A 24
+     50	      =0018		     USAGE_LEN equ $ - USAGE
+     51
+     52				     end Start
+Turbo Assembler	 Version 4.1	    02/15/26 17:06:42	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/15/26"
+??FILENAME			  Text	 "vargs	  "
+??TIME				  Text	 "17:06:42"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 VARGS
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CMD_LINE			  Number 0080
+EXIT				  Near	 DGROUP:0139
+LINE_N				  Number 0012
+LOOP_BODY			  Near	 DGROUP:0118
+MISUSAGE			  Near	 DGROUP:012F
+ROW_LEN				  Number 0050
+SHIFT				  Number 001E
+START				  Near	 DGROUP:0100
+USAGE				  Byte	 DGROUP:013E
+USAGE_LEN			  Number 0018
+VIDEOSEG			  Number B800
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0156 Word	  Public  CODE
+

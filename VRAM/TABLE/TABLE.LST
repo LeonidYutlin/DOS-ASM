@@ -1,0 +1,128 @@
+Turbo Assembler	 Version 4.1	    02/10/26 22:41:53	    Page 1
+table.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	      =0003		     LINE	  equ 3d
+      6	      =0020		     OFFSET__	  equ 32d
+      7	      =0010		     SIZE__	  equ 10h ; 16d
+      8	      =0030		     DIGIT_START  equ 30h
+      9	      =0039		     DIGIT_END	  equ 39h
+     10	      =0040		     ALPHA	  equ 40h ; 'A'
+     11
+     12	0100			     Start:
+     13	0100  B8 B800			     mov ax, 0b800h
+     14	0103  8E C0			     mov es, ax	; es = 0b800h
+     15
+     16	0105  B9 0010			     mov cx, SIZE__ ; top line counter
+     17	0108  B8 0E46			     mov ax, 0e00h + ALPHA + SIZE__ - 1	+ DIGIT_START -	DIGIT_END
+     18	010B  BB 0110			     mov bx, LINE * 80d	+ OFFSET__
+     19	010E  03 D9			     add bx, cx
+     20	0110  D1 E3			     shl bx, 1 ; * 2 for all the affromentioned
+     21	0112				     LOOP_TOP_LINE:
+     22	0112  A8 3F			     test al, ALPHA - 1	; test for the char before 'A'
+     23	0114  75 02			     jnz NO_CHANGE_TOP_LINE
+     24	0116  B0 39			     mov al, DIGIT_END	; if so, change	it to '9'
+     25	0118				     NO_CHANGE_TOP_LINE:
+     26	0118  26: 89 07			     mov es:word ptr[bx], ax
+     27	011B  83 EB 02			     sub bx, 2d
+     28	011E  FE C8			     dec al
+     29	0120  E2 F0			     loop LOOP_TOP_LINE
+     30
+     31	0122  B9 0010			     mov cx, SIZE__ ; top line counter
+     32	0125  B8 0E46			     mov ax, 0e00h + ALPHA + SIZE__ - 1	+ DIGIT_START -	DIGIT_END
+     33	0128  BB 0003			     mov bx, LINE
+     34	012B  03 D9			     add bx, cx
+     35	012D  D1 E3 D1 E3 D1 E3	D1+	     shl bx, 4
+     36	      E3
+     37	0135  8B D3			     mov dx, bx
+     38	0137  D1 E2 D1 E2		     shl dx, 2
+     39	013B  03 DA			     add bx, dx
+     40	013D  83 C3 20			     add bx, OFFSET__
+     41	0140  D1 E3			     shl bx, 1 ; * 2 for all the affromentioned
+     42	0142				     LOOP_SIDE_LINE:
+     43	0142  A8 3F			     test al, ALPHA - 1
+     44	0144  75 02			     jnz NO_CHANGE_SIDE_LINE
+     45	0146  B0 39			     mov al, DIGIT_END
+     46	0148				     NO_CHANGE_SIDE_LINE:
+     47	0148  26: 89 07			     mov es:word ptr[bx], ax
+     48	014B  81 EB 00A0		     sub bx, 2d	* 80d
+     49	014F  FE C8			     dec al
+     50	0151  E2 EF			     loop LOOP_SIDE_LINE
+     51
+     52	0153  B9 0100			     mov cx, SIZE__ * SIZE__ ; table counter
+     53					     ; we will divide by 16 and	decide from there
+     54	0156				     LOOP_BODY:
+     55	0156  BB 02C2			     mov bx, (LINE + 1)	* 2d * 80d + (OFFSET__ + 1) * 2d ; base	pos
+     56	0159  8B C1			     mov ax, cx
+     57	015B  BA 0010			     mov dx, SIZE__
+Turbo Assembler	 Version 4.1	    02/10/26 22:41:53	    Page 2
+table.asm
+
+
+
+     58	015E  F6 F2			     div dl	  ; al is ax / dx, ah is ax % dx
+     59	0160  D1 E0			     shl ax, 1
+     60	0162  02 DC			     add bl, ah
+     61	0164  32 E4			     xor ah, ah
+     62	0166  D1 E0 D1 E0 D1 E0	D1+	     shl ax, 4
+     63	      E0
+     64	016E  8B D0			     mov dx, ax
+     65	0170  D1 E2 D1 E2		     shl dx, 2
+     66	0174  03 C2			     add ax, dx	  ; this whole baloney is al * 80d :)
+     67	0176  03 D8			     add bx, ax
+     68	0178  26: C6 07	04		     mov es:byte ptr[bx], 04h
+     69	017C  26: 88 4F	01		     mov es:byte ptr[bx	+ 1], cl
+     70	0180  E2 D4			     loop LOOP_BODY
+     71
+     72	0182  B8 4C00			     mov ax, 4c00h
+     73	0185  CD 21			     int 21h
+     74
+     75				     end Start
+Turbo Assembler	 Version 4.1	    02/10/26 22:41:53	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/10/26"
+??FILENAME			  Text	 "table	  "
+??TIME				  Text	 "22:41:53"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 TABLE
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+ALPHA				  Number 0040
+DIGIT_END			  Number 0039
+DIGIT_START			  Number 0030
+LINE				  Number 0003
+LOOP_BODY			  Near	 DGROUP:0156
+LOOP_SIDE_LINE			  Near	 DGROUP:0142
+LOOP_TOP_LINE			  Near	 DGROUP:0112
+NO_CHANGE_SIDE_LINE		  Near	 DGROUP:0148
+NO_CHANGE_TOP_LINE		  Near	 DGROUP:0118
+OFFSET__			  Number 0020
+SIZE__				  Number 0010
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0187 Word	  Public  CODE
+

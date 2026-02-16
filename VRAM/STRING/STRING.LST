@@ -1,0 +1,76 @@
+Turbo Assembler	 Version 4.1	    02/10/26 23:07:07	    Page 1
+string.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4	0100			     Start:
+      5	0100  B8 B800			     mov ax, 0b800h
+      6	0103  8E C0			     mov es, ax	; es = 0b800h
+      7	0105  BB 00A0			     mov bx, 160d
+      8
+      9	0108  BA 031E			     mov dx, 5d	* 2d * 80d - 2d
+     10
+     11	010B  B9 0035 90		     mov cx, APPLEDOG_LEN
+     12	010F  BE 015Er			     mov si, offset APPLEDOG + APPLEDOG_LEN - 1
+     13	0112				     LOOP_BODY:
+     14	0112  8B D9			     mov bx, cx
+     15	0114  D1 E3			     shl bx, 1
+     16	0116  03 DA			     add bx, dx
+     17	0118  8B 3C			     mov di, [si]
+     18	011A  26: 89 3F			     mov es:word ptr[bx], di
+     19	011D  26: C6 47	01 7C		     mov es:byte ptr[bx	+ 1], 7ch
+     20	0122  4E			     dec si
+     21	0123  E2 ED			     loop LOOP_BODY
+     22
+     23	0125  B8 4C00			     mov ax, 4c00h
+     24	0128  CD 21			     int 21h
+     25
+     26	012A  48 65 6C 6C 6F 2C	20+  APPLEDOG db 'Hello, I am an Appledog inside your computer!	Bark :3'
+     27	      49 20 61 6D 20 61	6E+
+     28	      20 41 70 70 6C 65	64+
+     29	      6F 67 20 69 6E 73	69+
+     30	      64 65 20 79 6F 75	72+
+     31	      20 63 6F 6D 70 75	74+
+     32	      65 72 21 20 42 61	72+
+     33	      6B 20 3A 33
+     34	      =0035		     APPLEDOG_LEN equ $-APPLEDOG
+     35
+     36				     end Start
+Turbo Assembler	 Version 4.1	    02/10/26 23:07:07	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/10/26"
+??FILENAME			  Text	 "string  "
+??TIME				  Text	 "23:07:07"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STRING
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+APPLEDOG			  Byte	 DGROUP:012A
+APPLEDOG_LEN			  Number 0035
+LOOP_BODY			  Near	 DGROUP:0112
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  015F Word	  Public  CODE
+
