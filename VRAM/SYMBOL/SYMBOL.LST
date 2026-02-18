@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    02/10/26 18:44:57	    Page 1
+Turbo Assembler	 Version 4.1	    02/16/26 16:24:38	    Page 1
 symbol.asm
 
 
@@ -18,7 +18,7 @@ symbol.asm
      13	0114  CD 21			     int 21h
      14
      15				     end Start
-Turbo Assembler	 Version 4.1	    02/10/26 18:44:57	    Page 2
+Turbo Assembler	 Version 4.1	    02/16/26 16:24:38	    Page 2
 Symbol Table
 
 
@@ -26,9 +26,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "02/10/26"
+??DATE				  Text	 "02/16/26"
 ??FILENAME			  Text	 "symbol  "
-??TIME				  Text	 "18:44:57"
+??TIME				  Text	 "16:24:38"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP

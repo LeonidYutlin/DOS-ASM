@@ -4,7 +4,7 @@ org 100h
 
 LINE         equ 3d
 OFFSET__     equ 32d
-SIZE__       equ 10h ; 16d
+SIZE__       equ 10h ; 8d
 DIGIT_START  equ 30h
 DIGIT_END    equ 39h
 ALPHA        equ 40h ; 'A'

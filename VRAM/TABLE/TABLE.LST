@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    02/10/26 22:41:53	    Page 1
+Turbo Assembler	 Version 4.1	    02/16/26 16:24:09	    Page 1
 table.asm
 
 
@@ -9,7 +9,7 @@ table.asm
       4
       5	      =0003		     LINE	  equ 3d
       6	      =0020		     OFFSET__	  equ 32d
-      7	      =0010		     SIZE__	  equ 10h ; 16d
+      7	      =0010		     SIZE__	  equ 10h ; 8d
       8	      =0030		     DIGIT_START  equ 30h
       9	      =0039		     DIGIT_END	  equ 39h
      10	      =0040		     ALPHA	  equ 40h ; 'A'
@@ -60,7 +60,7 @@ table.asm
      55	0156  BB 02C2			     mov bx, (LINE + 1)	* 2d * 80d + (OFFSET__ + 1) * 2d ; base	pos
      56	0159  8B C1			     mov ax, cx
      57	015B  BA 0010			     mov dx, SIZE__
-Turbo Assembler	 Version 4.1	    02/10/26 22:41:53	    Page 2
+Turbo Assembler	 Version 4.1	    02/16/26 16:24:09	    Page 2
 table.asm
 
 
@@ -83,7 +83,7 @@ table.asm
      73	0185  CD 21			     int 21h
      74
      75				     end Start
-Turbo Assembler	 Version 4.1	    02/10/26 22:41:53	    Page 3
+Turbo Assembler	 Version 4.1	    02/16/26 16:24:09	    Page 3
 Symbol Table
 
 
@@ -91,9 +91,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "02/10/26"
+??DATE				  Text	 "02/16/26"
 ??FILENAME			  Text	 "table	  "
-??TIME				  Text	 "22:41:53"
+??TIME				  Text	 "16:24:09"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
