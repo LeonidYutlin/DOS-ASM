@@ -70,7 +70,6 @@ Start:
 	Exit 1d
 
 USAGE db 'Usage: frame <message>', 0ah, '$'
-USAGE_LEN equ $ - USAGE
 
 ;-------------
 ;
