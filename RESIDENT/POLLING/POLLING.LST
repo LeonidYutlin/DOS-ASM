@@ -1,0 +1,58 @@
+Turbo Assembler	 Version 4.1	    02/25/26 13:08:02	    Page 1
+polling.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100			     Start:
+      6	0100  BB B800			     mov bx, 0b800h
+      7	0103  53			     push bx
+      8	0104  07			     pop es
+      9
+     10	0105  BB 0370			     mov bx, (5	* 80d +	40d) * 2
+     11	0108  B4 4E			     mov ah, 4eh
+     12	010A				     Continue:
+     13	010A  E4 60				     in	al, 60h
+     14	010C  26: 89 07				     mov es:[bx], ax
+     15	010F  3C 01				     cmp al, 1
+     16	0111  75 F7				     jne Continue
+     17
+     18	0113  B8 4C00			     mov ax, 4c00h
+     19	0116  CD 21			     int 21h
+     20				     end Start
+Turbo Assembler	 Version 4.1	    02/25/26 13:08:02	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/26"
+??FILENAME			  Text	 "polling "
+??TIME				  Text	 "13:08:02"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 POLLING
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CONTINUE			  Near	 DGROUP:010A
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0118 Word	  Public  CODE
+

@@ -1,0 +1,86 @@
+Turbo Assembler	 Version 4.1	    02/25/26 13:31:06	    Page 1
+cyclic.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	      =001E		     LEN equ 30d
+      6	      =0492		     START_POS equ (7 *	80 + 25d) * 2
+      7	      =000B		     UNHIGHLIGHTED equ 0bh
+      8	      =000C		     HIGHLIGHTED equ 0ch
+      9
+     10	0100			     Start:
+     11	0100  BB B800			     mov bx, 0b800h
+     12	0103  53			     push bx
+     13	0104  07			     pop es
+     14
+     15	0105  BB 0492			     mov bx, START_POS
+     16	0108  B4 0B			     mov ah, UNHIGHLIGHTED
+     17	010A  EB 0A 90			     jmp FirstCycle
+     18	010D				     Continue:
+     19	010D  E4 60				     in	al, 60h
+     20	010F  3A C1				     cmp al, cl
+     21	0111  74 FA				     je	Continue
+     22	0113  EB 03 90				     jmp NonFirstCycle
+     23	0116					     FirstCycle:
+     24	0116  E4 60				     in	al, 60h
+     25	0118					     NonFirstCycle:
+     26	0118  B4 0B				     mov ah, UNHIGHLIGHTED
+     27	011A  26: 88 67	01			     mov es:[bx	+ 1], ah
+     28	011E  83 C3 02				     add bx, 2
+     29	0121  81 FB 04CE			     cmp bx, START_POS + LEN * 2
+     30	0125  76 03				     jna NoModReset
+     31	0127  BB 0492				     mov bx, START_POS
+     32	012A					     NoModReset:
+     33	012A  8A C8				     mov cl, al
+     34	012C  B4 0C				     mov ah, HIGHLIGHTED
+     35	012E  26: 89 07				     mov es:[bx], ax
+     36	0131  3C 01				     cmp al, 1
+     37	0133  75 D8				     jne Continue
+     38
+     39	0135  B8 4C00			     mov ax, 4c00h
+     40	0138  CD 21			     int 21h
+     41				     end Start
+Turbo Assembler	 Version 4.1	    02/25/26 13:31:06	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/26"
+??FILENAME			  Text	 "cyclic  "
+??TIME				  Text	 "13:31:06"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 CYCLIC
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CONTINUE			  Near	 DGROUP:010D
+FIRSTCYCLE			  Near	 DGROUP:0116
+HIGHLIGHTED			  Number 000C
+LEN				  Number 001E
+NOMODRESET			  Near	 DGROUP:012A
+NONFIRSTCYCLE			  Near	 DGROUP:0118
+START				  Near	 DGROUP:0100
+START_POS			  Number 0492
+UNHIGHLIGHTED			  Number 000B
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  013A Word	  Public  CODE
+
