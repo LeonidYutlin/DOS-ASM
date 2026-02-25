@@ -1,0 +1,120 @@
+Turbo Assembler	 Version 4.1	    02/25/26 17:43:13	    Page 1
+register.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100			     Start:
+      6	0100  B8 3509			     mov ax, 3509h
+      7	0103  CD 21			     int 21h
+      8	0105  89 1E 0150r		     mov OriginalOffset, bx
+      9	0109  8C C3			     mov bx, es
+     10	010B  89 1E 0152r		     mov OriginalSegment, bx
+     11
+     12	010F  33 C0			     xor ax, ax
+     13	0111  50			     push ax
+     14	0112  07			     pop es
+     15
+     16	0113  FA			     cli
+     17	0114  BB 0024			     mov bx, 09h * 4
+     18	0117  26: C7 07	0134r		     mov es:[bx], offset Handler
+     19	011C  8C C8			     mov ax, cs
+     20	011E  26: 89 47	02		     mov es:[bx	+ 2], ax
+     21	0122  FB			     sti
+     22
+     23	0123  B8 3100			     mov ax, 3100h
+     24	0126  BA 0154r			     mov dx, offset EOP
+     25	0129  D1 EA D1 EA D1 EA	D1+	     shr dx, 4
+     26	      EA
+     27	0131  42			     inc dx
+     28	0132  CD 21			     int 21h
+     29
+     30	0134			     Handler proc
+     31	0134  50			     push ax
+     32	0135  53			     push bx
+     33	0136  06			     push es
+     34
+     35	0137  E4 60			     in	al, 60h
+     36	0139  3C 03			     cmp al, 3d
+     37	013B  75 0F			     jne Original
+     38
+     39	013D  BB B800			     mov bx, 0b800h
+     40	0140  53			     push bx
+     41	0141  07			     pop es
+     42
+     43	0142  BB 0370			     mov bx, (5	* 80d +	40d) * 2
+     44	0145  B4 05			     mov ah, 05h
+     45	0147  B0 03			     mov al, 03h
+     46	0149  26: 89 07			     mov es:[bx], ax
+     47
+     48					     ;in al, 61h
+     49					     ;or al, 80h
+     50					     ;out 61h, al
+     51					     ;and al, not 80h
+     52					     ;out 61h, al
+     53					     ;mov al, 20h
+     54					     ;out 20h, al
+     55
+     56	014C				     Original:
+     57
+Turbo Assembler	 Version 4.1	    02/25/26 17:43:13	    Page 2
+register.asm
+
+
+
+     58	014C  07			     pop es
+     59	014D  5B			     pop bx
+     60	014E  58			     pop ax
+     61
+     62					     ;iret
+     63
+     64	014F  EA			     db	0eah ; JMP FAR
+     65
+     66	0150  0000			     OriginalOffset dw 0
+     67	0152  0000			     OriginalSegment dw	0
+     68
+     69	0154				     endp
+     70
+     71	0154			     EOP:
+     72
+     73				     end Start
+Turbo Assembler	 Version 4.1	    02/25/26 17:43:13	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "02/25/26"
+??FILENAME			  Text	 "register"
+??TIME				  Text	 "17:43:13"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 REGISTER
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+EOP				  Near	 DGROUP:0154
+HANDLER				  Near	 DGROUP:0134
+ORIGINAL			  Near	 DGROUP:014C
+ORIGINALOFFSET			  Word	 DGROUP:0150
+ORIGINALSEGMENT			  Word	 DGROUP:0152
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0154 Word	  Public  CODE
+
