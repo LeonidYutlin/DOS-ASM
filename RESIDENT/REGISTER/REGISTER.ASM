@@ -24,9 +24,15 @@ TEXT_COLOR equ 7ch
 Start:
 	mov ax, 3509h
 	int 21h
-	mov OriginalOffset, bx
+	mov Original09Offset, bx
 	mov bx, es
-	mov OriginalSegment, bx
+	mov Original09Segment, bx
+
+	mov ax, 3508h
+	int 21h
+	mov Original08Offset, bx
+	mov bx, es
+	mov Original08Segment, bx
 
 	xor ax, ax
 	push ax
@@ -34,7 +40,11 @@ Start:
 
  	cli
 	mov bx, 09h * 4
-	mov es:[bx], offset Handler
+	mov es:[bx], offset SwitchHandler
+	mov ax, cs
+	mov es:[bx + 2], ax
+	mov bx, 08h * 4
+	mov es:[bx], offset UpdateHandler
 	mov ax, cs
 	mov es:[bx + 2], ax
 	sti
@@ -45,7 +55,7 @@ Start:
 	inc dx
 	int 21h
 
-PushRegs macro
+UpdatePushRegs macro
 	push ax
 	push bx
 	push es
@@ -57,7 +67,7 @@ PushRegs macro
 	push ss
 	endm
 
-PopRegs macro
+UpdatePopRegs macro
 	pop ss
 	pop ds
 	pop di
@@ -69,12 +79,13 @@ PopRegs macro
 	pop ax
 	endm
 
-Handler proc
-	PushRegs
+Switch db 0
 
-	in al, 60h
-	cmp al, 3d
-	jne Original
+UpdateHandler proc
+	UpdatePushRegs
+
+	cmp Switch, 1
+	jne @@Original
 
 	mov bx, VIDEOSEG
 	push bx
@@ -83,13 +94,8 @@ Handler proc
 	push cs
 	pop ds
 
-	;mov cx, 5
-	;mov ax, 0
-	;mov dx, (LINE_N * ROW_LEN + SHIFT) * 2d
-	;call RenderFrameLine
-
 	mov dx, (LINE_N * ROW_LEN + SHIFT) * 2d
-	mov ax, (PAD_VER + 1) * 2d + 1 ; we add padding and one line for text
+	mov ax, (PAD_VER + 1) * 2d + 2 ; we add padding and two lines for text
 	mov cx, MSGLEN
 	add cx, (PAD_HOR + 1) * 2d - 1 ; we add padding and remove the space
 	call RenderFrame
@@ -102,6 +108,40 @@ Handler proc
 	dec si
 	call RenderString
 
+	@@Original:
+
+	UpdatePopRegs
+
+	;iret
+
+	db 0eah ; JMP FAR
+
+	Original08Offset dw 0
+	Original08Segment dw 0
+endp
+
+SwitchPushRegs macro
+	push ax
+	endm
+
+SwitchPopRegs macro
+	pop ax
+	endm
+
+SwitchHandler proc
+	SwitchPushRegs
+
+	in al, 60h
+	cmp al, 3d
+	jne @@Original
+
+	cmp Switch, 0
+	jne @@TurnOff
+	mov Switch, 1
+	jmp @@Original
+	@@TurnOff:
+		mov Switch, 0
+
 	;in al, 61h
 	;or al, 80h
 	;out 61h, al
@@ -110,20 +150,20 @@ Handler proc
 	;mov al, 20h
 	;out 20h, al
 
-	Original:
+	@@Original:
 
-	PopRegs
+	SwitchPopRegs
 
 	;iret
 
 	db 0eah ; JMP FAR
 
-	OriginalOffset dw 0
-	OriginalSegment dw 0
+	Original09Offset dw 0
+	Original09Segment dw 0
 
 	endp
 
-MSG db 'I have been summoned'
+MSG db 'AX BX CX DX SI DI'
 MSGLEN equ $ - MSG
 
 ;-------------
@@ -261,6 +301,31 @@ RenderString	proc
 		sub bx, 2
 		loop @@LOOP_BODY
 	@@EXIT:
+		ret
+		endp
+
+HEX_ALPHA db '0123456789ABCDEF'
+
+;-------------
+; CharToHex - takes char at AL and converts it to
+;			  it's 2-byte hex code (upper byte is stored in AH, lower in AL)
+; Input:	AL = char to convert
+; Output:	AH = first hex byte
+;			AL = second hex byte
+; Destr:    BX
+;-------------
+CharToHex	proc
+		mov ah, al
+		shr al, 4
+		and ah, 0fh
+
+		mov bx, offset HEX_ALPHA
+		add bl, al
+		mov al, [bx]
+
+		mov bx, offset HEX_ALPHA
+		add bl, ah
+		mov ah, [bx]
 		ret
 		endp
 
