@@ -45,7 +45,7 @@ Start:
 	inc dx
 	int 21h
 
-Handler proc
+PushRegs macro
 	push ax
 	push bx
 	push es
@@ -53,6 +53,24 @@ Handler proc
 	push dx
 	push si
 	push di
+	push ds
+	push ss
+	endm
+
+PopRegs macro
+	pop ss
+	pop ds
+	pop di
+	pop si
+	pop dx
+	pop cx
+	pop es
+	pop bx
+	pop ax
+	endm
+
+Handler proc
+	PushRegs
 
 	in al, 60h
 	cmp al, 3d
@@ -62,12 +80,26 @@ Handler proc
 	push bx
 	pop es
 
+	push cs
+	pop ds
+
+	;mov cx, 5
+	;mov ax, 0
+	;mov dx, (LINE_N * ROW_LEN + SHIFT) * 2d
+	;call RenderFrameLine
+
+	mov dx, (LINE_N * ROW_LEN + SHIFT) * 2d
+	mov ax, (PAD_VER + 1) * 2d + 1 ; we add padding and one line for text
+	mov cx, MSGLEN
+	add cx, (PAD_HOR + 1) * 2d - 1 ; we add padding and remove the space
+	call RenderFrame
+
 	mov dx, ((LINE_N + PAD_VER + 2) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
 	mov bx, offset MSG
-	mov cl, MSGLEN ; command line length
+	mov cx, MSGLEN
 	mov si, bx
 	add si, cx
-	dec cl ; skip first space
+	dec si
 	call RenderString
 
 	;in al, 61h
@@ -80,13 +112,7 @@ Handler proc
 
 	Original:
 
-	pop di
-	pop si
-	pop dx
-	pop cx
-	pop es
-	pop bx
-	pop ax
+	PopRegs
 
 	;iret
 
@@ -125,17 +151,17 @@ RenderFrame 	proc
 
 	push cx
 	mov cx, ax
-	mov al, 2
+	mov ax, 2
 	@@LOOP_LINES:
 		push cx ; save ax'ed cx
 		mov bx, sp
 		add bx, 2
-		mov cx, [bx]; retrieve arg cx to cx
+		mov cx, ss:[bx] ; retrieve arg cx to cx
 		call RenderFrameLine
 
-		cmp al, 1
+		cmp ax, 1
 		je @@DONT_SET
-		mov al, 1 ; switch to middle mode
+		mov ax, 1 ; switch to middle mode
 
 		@@DONT_SET:
 		sub dx, ROW_LEN * 2 ; go one line up
@@ -143,7 +169,7 @@ RenderFrame 	proc
 
 		cmp cx, 2 ; check if it is time to change the frame to bottom mode
 		jne @@LOOP_CHECK
-		mov al, 0
+		mov ax, 0
 
 		@@LOOP_CHECK:
 			loop @@LOOP_LINES
