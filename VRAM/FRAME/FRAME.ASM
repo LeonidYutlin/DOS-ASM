@@ -7,8 +7,8 @@ locals @@
 VIDEOSEG   equ 0b800h
 ROW_LEN    equ 80d
 CMD_LINE   equ 80h
-LINE_N     equ 7d
-SHIFT      equ 15d
+LINE_N     equ 8d
+SHIFT      equ 24d
 F_VER      equ 0bah ; ║
 F_HOR      equ 0cdh ; ═
 F_UR       equ 0bbh ; ╗
@@ -47,22 +47,23 @@ Start:
 	add cx, (PAD_HOR + 1) * 2d - 1 ; we add padding and remove the space
 	call RenderFrame
 
-	mov di, ((LINE_N + PAD_VER + 2) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
+	mov di, ((LINE_N + PAD_VER + 1) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
 	mov bx, CMD_LINE
 	xor ch, ch
 	mov cl, [bx] ; command line length
+	dec cl
 	mov si, bx
-	add si, cx
-	dec cl ; skip first space
+	add si, 2 ; skip cmd len and skip first space
 	call RenderString
 
-	;mov di, ((LINE_N + PAD_VER + 6) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
-	;mov bx, CMD_LINE
-	;mov cl, [bx] ; command line length
-	;mov si, bx
-	;add si, cx
-	;dec cl ; skip first space
-	;call RenderHexBytes
+	mov di, ((LINE_N + PAD_VER + 4) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
+	mov bx, CMD_LINE
+	mov ch, ch
+	mov cl, [bx] ; command line length
+	dec cl
+	mov si, bx
+	add si, 2
+	call RenderHexBytes
 
 	Exit 0d
 
@@ -90,6 +91,7 @@ USAGE db 'Usage: frame <message>', 0ah, '$'
 ;         CX =  length
 ;         DI =  vram offset in bytes
 ; Destr:  BX, DI, SI, CX, AX
+; Expect: CLD
 ;-------------
 RenderFrame 	proc
 	test cx, cx
@@ -199,18 +201,17 @@ RenderFrameLine	proc
 ;		 with TEXT_COLOR color attribute
 ; Input:  SI -> string to render
 ;         CX =  number of bytes to render
-;         DX =  vram offset in bytes
+;         DI =  vram offset in bytes
 ; Destr:  BX, DI, SI, CX
+; Expect: CLD
 ;-------------
 RenderString	proc
 	test cx, cx
 	jz @@EXIT
 	@@LOOP_BODY:
-		mov bx, [si]
-		mov es:word ptr[di], bx
-		mov es:byte ptr[di + 1], TEXT_COLOR
-		inc si
-		add bx, 2
+		movsb
+		mov es:byte ptr[di], TEXT_COLOR
+		inc di
 		loop @@LOOP_BODY
 	@@EXIT:
 		ret
@@ -223,26 +224,20 @@ RenderString	proc
 ; Input:  SI -> string to render
 ;         CX =  number of bytes to render
 ;         DI =  vram offset in bytes
-; Destr:  AX, BX, SI, CX
+; Destr:  AX, SI, CX, DI
 ;-------------
 RenderHexBytes	proc
 	test cx, cx
 	jz @@EXIT
-	mov bx, cx
-	dec bx
-	shl bx, 1
-	add bx, di
 	@@LOOP_BODY:
 		mov al, [si]
-		push bx
 		call CharToHex
-		pop bx
-		mov es:byte ptr[bx],     al
-		mov es:byte ptr[bx + 1], TEXT_COLOR
-		mov es:byte ptr[bx + 2], ah
-		mov es:byte ptr[bx + 3], TEXT_COLOR
-		dec si
-		sub bx, 4
+		mov es:byte ptr[di],     al
+		mov es:byte ptr[di + 1], TEXT_COLOR
+		mov es:byte ptr[di + 2], ah
+		mov es:byte ptr[di + 3], TEXT_COLOR
+		inc si
+		add di, 4
 		loop @@LOOP_BODY
 	@@EXIT:
 		ret
