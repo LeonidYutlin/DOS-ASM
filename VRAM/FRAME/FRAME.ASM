@@ -33,6 +33,7 @@ Exit		macro exitCode
 
 Start:
 	mov bx, CMD_LINE
+	xor ch, ch
 	mov cl, [bx] ; command line length
 	test cl, cl
 	jz MISUSAGE
@@ -40,26 +41,28 @@ Start:
 	mov ax, VIDEOSEG
 	mov es, ax
 
-	mov dx, (LINE_N * ROW_LEN + SHIFT) * 2d ;
+	cld
+	mov di, (LINE_N * ROW_LEN + SHIFT) * 2d ;
 	mov ax, (PAD_VER + 1) * 2d + 1 ; we add padding and one line for text
 	add cx, (PAD_HOR + 1) * 2d - 1 ; we add padding and remove the space
 	call RenderFrame
 
-	mov dx, ((LINE_N + PAD_VER + 2) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
+	mov di, ((LINE_N + PAD_VER + 2) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
 	mov bx, CMD_LINE
+	xor ch, ch
 	mov cl, [bx] ; command line length
 	mov si, bx
 	add si, cx
 	dec cl ; skip first space
 	call RenderString
 
-	mov dx, ((LINE_N + PAD_VER + 6) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
-	mov bx, CMD_LINE
-	mov cl, [bx] ; command line length
-	mov si, bx
-	add si, cx
-	dec cl ; skip first space
-	call RenderHexBytes
+	;mov di, ((LINE_N + PAD_VER + 6) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
+	;mov bx, CMD_LINE
+	;mov cl, [bx] ; command line length
+	;mov si, bx
+	;add si, cx
+	;dec cl ; skip first space
+	;call RenderHexBytes
 
 	Exit 0d
 
@@ -85,8 +88,8 @@ USAGE db 'Usage: frame <message>', 0ah, '$'
 ;		 with BACKGROUND color attribute
 ; Input:  AX =  height
 ;         CX =  length
-;         DX =  vram offset in bytes
-; Destr:  BX, DI, SI, CX, AX, DX
+;         DI =  vram offset in bytes
+; Destr:  BX, DI, SI, CX, AX
 ;-------------
 RenderFrame 	proc
 	test cx, cx
@@ -94,22 +97,15 @@ RenderFrame 	proc
 	test ax, ax
 	jz @@EXIT
 
-	; dx += ax * 160
-	mov bx, ax
-	shl bx, 5
-	mov di, bx
-	shl di, 2
-	add bx, di
-	add dx, bx
-
 	push cx
 	mov cx, ax
-	mov al, 2
+	mov al, 0
 	@@LOOP_LINES:
 		push cx ; save ax'ed cx
 		mov bx, sp
 		add bx, 2
-		mov cx, [bx]; retrieve arg cx to cx
+		mov cx, ss:[bx]; retrieve arg cx to cx
+		push di
 		call RenderFrameLine
 
 		cmp al, 1
@@ -117,12 +113,13 @@ RenderFrame 	proc
 		mov al, 1 ; switch to middle mode
 
 		@@DONT_SET:
-		sub dx, ROW_LEN * 2 ; go one line up
+		pop di
+		add di, ROW_LEN * 2 ; go one line down
 		pop cx ; restore ax'ed cx
 
 		cmp cx, 2 ; check if it is time to change the frame to bottom mode
 		jne @@LOOP_CHECK
-		mov al, 0
+		mov al, 2
 
 		@@LOOP_CHECK:
 			loop @@LOOP_LINES
@@ -132,22 +129,7 @@ RenderFrame 	proc
 		ret
 		        endp
 
-; MACRO for RenderFrameLine's repeated code
-; isn't meant for use outside RenderFrameLine
-RenderLineMode macro firstSymbol, middleSymbol, lastSymbol, loopName
-		mov es:word ptr[bx],     firstSymbol
-		mov es:byte ptr[bx + 1], BACKGROUND
-		sub bx, 2
-		sub cx, 2
-		loopName:
-			mov es:word ptr[bx],     middleSymbol
-			mov es:byte ptr[bx + 1], BACKGROUND
-			sub bx, 2
-			loop loopName
-		mov es:word ptr[bx],     lastSymbol
-		mov es:byte ptr[bx + 1], BACKGROUND
-		jmp @@EXIT
-		   endm
+FrameBits db F_UL, F_HOR, F_UR, F_VER, F_WS, F_VER, F_DL, F_HOR, F_DR, F_WS, F_WS, F_WS
 
 ;-------------
 ; RenderFrameLine - renders a line of CX bytes
@@ -157,35 +139,56 @@ RenderLineMode macro firstSymbol, middleSymbol, lastSymbol, loopName
 ;		0 = top,
 ;		1 = middle,
 ;		2 = bottom,
-;	        other = space-filled line
+;	        other = whitespace-filled line
 ;         CX =  number of bytes to render
-;         DX =  vram offset in bytes
-; Destr:  BX, CX
+;         DI =  vram offset in bytes
+; Destr:  CX, AX, SI, DI
+; Expect: CLD
 ;-------------
 RenderFrameLine	proc
 	test cx, cx
 	jnz @@SKIP_RET
-	ret ; too far to JMP to @@EXIT (govnocode)
+	ret ; too far to JZ to @@EXIT
 	@@SKIP_RET:
-	mov bx, cx
-	dec bx
-	shl bx, 1
-	add bx, dx
-	test al, al
-	jz @@TOP
-	cmp al, 1
-	je @@MIDDLE
+
+	; set background color attributes
+	xor ah, ah
+	push di
+	inc di
+	push ax
+	mov ax, BACKGROUND
+	push cx
+	rep stosw
+	pop cx
+	pop ax
+	pop di
+
+	; decide the mode
 	cmp al, 2
-	je @@BOTTOM
-	jmp @@SPACE_FILLED
-	@@TOP:
-		RenderLineMode F_UR, F_HOR, F_UL,  @@LOOP_BODY_T
-	@@MIDDLE:
-		RenderLineMode F_VER, F_WS, F_VER, @@LOOP_BODY_M
-	@@BOTTOM:
-		RenderLineMode F_DR, F_HOR, F_DL,  @@LOOP_BODY_B
-	@@SPACE_FILLED:
-		RenderLineMode F_WS, F_WS, F_WS,   @@LOOP_BODY_S
+	jna @@START_RENDER
+	mov al, 3
+
+	@@START_RENDER:
+	mov si, offset FrameBits
+	add si, ax
+	shl ax, 1
+	add si, ax
+	mov al, [si] ; set to first symbol
+	mov es:byte ptr[di], al
+	add di, 2
+	sub cx, 2 ; remove 2 cause we wont draw the first and the last symbol in a loop
+	test cx, cx
+	jz @@LAST
+	inc si
+	mov al, [si] ; set to middle symbol
+	@@LOOP:
+		mov es:byte ptr[di], al
+		add di, 2
+		loop @@LOOP
+	@@LAST:
+	inc si
+	mov al, [si] ; set to last symbol
+	mov es:byte ptr[di], al
 	@@EXIT:
 		ret
 		endp
@@ -202,29 +205,25 @@ RenderFrameLine	proc
 RenderString	proc
 	test cx, cx
 	jz @@EXIT
-	mov bx, cx
-	dec bx
-	shl bx, 1
-	add bx, dx
 	@@LOOP_BODY:
-		mov di, [si]
-		mov es:word ptr[bx], di
-		mov es:byte ptr[bx + 1], TEXT_COLOR
-		dec si
-		sub bx, 2
+		mov bx, [si]
+		mov es:word ptr[di], bx
+		mov es:byte ptr[di + 1], TEXT_COLOR
+		inc si
+		add bx, 2
 		loop @@LOOP_BODY
 	@@EXIT:
 		ret
 		endp
 
 ;-------------
-; RenderString - renders CX bytes as hex codes from SI
+; RenderHexBytes - renders CX bytes as hex codes from SI
 ;		 to ES starting from pos DX,
 ;		 with TEXT_COLOR color attribute
 ; Input:  SI -> string to render
 ;         CX =  number of bytes to render
-;         DX =  vram offset in bytes
-; Destr:  AX, BX, DI, SI, CX
+;         DI =  vram offset in bytes
+; Destr:  AX, BX, SI, CX
 ;-------------
 RenderHexBytes	proc
 	test cx, cx
@@ -232,7 +231,7 @@ RenderHexBytes	proc
 	mov bx, cx
 	dec bx
 	shl bx, 1
-	add bx, dx
+	add bx, di
 	@@LOOP_BODY:
 		mov al, [si]
 		push bx
