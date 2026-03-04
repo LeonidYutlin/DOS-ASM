@@ -98,16 +98,18 @@ RenderFrame 	proc
 	jz @@EXIT
 	test ax, ax
 	jz @@EXIT
+	mov bp, sp
 
 	push cx
+	mov bx, ROW_LEN
+	inc bx
+	sub bx, cx ; potential overflow here but no solution for now
+	shl bx, 1 ; now bx contains how much we need to shift per iteration
 	mov cx, ax
 	mov al, 0
 	@@LOOP_LINES:
 		push cx ; save ax'ed cx
-		mov bx, sp
-		add bx, 2
-		mov cx, ss:[bx]; retrieve arg cx to cx
-		push di
+		mov cx, ss:[bp - 2]; retrieve arg cx to cx
 		call RenderFrameLine
 
 		cmp al, 1
@@ -115,8 +117,7 @@ RenderFrame 	proc
 		mov al, 1 ; switch to middle mode
 
 		@@DONT_SET:
-		pop di
-		add di, ROW_LEN * 2 ; go one line down
+		add di, bx
 		pop cx ; restore ax'ed cx
 
 		cmp cx, 2 ; check if it is time to change the frame to bottom mode
@@ -125,6 +126,7 @@ RenderFrame 	proc
 
 		@@LOOP_CHECK:
 			loop @@LOOP_LINES
+
 	add sp, 2
 
 	@@EXIT:
@@ -157,6 +159,7 @@ RenderFrameLine	proc
 	xor ah, ah
 	push di
 	inc di
+
 	push ax
 	mov ax, BACKGROUND
 	push cx
@@ -208,10 +211,10 @@ RenderFrameLine	proc
 RenderString	proc
 	test cx, cx
 	jz @@EXIT
+        mov ah, TEXT_COLOR
 	@@LOOP_BODY:
-		movsb
-		mov es:byte ptr[di], TEXT_COLOR
-		inc di
+                lodsb
+                stosw
 		loop @@LOOP_BODY
 	@@EXIT:
 		ret
