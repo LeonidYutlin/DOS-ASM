@@ -29,7 +29,7 @@ Start:
 
     mov ah, 0ah
     lea dx, BUFFER_START
-    int 21
+    int 21h
 
     jmp @@CORRECT
 
@@ -37,7 +37,10 @@ Start:
     @@INCORRECT:
 
     @@CORRECT:
-    lea cx, BUFFER_START + 1
+    cld
+    lea si, BUFFER_START + 1
+    xor cx, cx
+    mov cl, [si]
     lea si, BUFFER
     call hash
     Puts CORRECT_MSG
@@ -67,26 +70,28 @@ BUFFER db 16 dup(?)
 ; Input:  CX =  number of bytes
 ;         SI -> string of bytes
 ; Output: BX - higher 16 bits of a hash
-;         AX - lower  16 bits of a hash
-; Destr: DX
+;         DX - lower  16 bits of a hash
+; Destr: AX, SI, CX
+; Expect: CLD
 ;-------------
 Hash proc
     test cx, cx
     jnz @@START
     ret
     @@START:
-    xor ax, ax
+    xor dx, dx
     xor bx, bx
+    xor ah, ah
     @@LOOP:
-        ; ax *= 37
-        mov dx, ax
-        shl ax, 3
-        add ax, dx
-        shl ax, 2
-        add ax, dx
-        mov dx, [si]
-        add ax, [si]
-        inc si
+        ; dx *= 37
+        mov ax, dx
+        shl dx, 3
+        add dx, ax
+        shl dx, 2
+        add dx, ax
+
+        lodsb
+        add dx, ax
     loop @@LOOP
     ret
 endp
