@@ -38,20 +38,39 @@ Start:
     mov cl, [si]
     lea si, BUFFER
     call hash
+
+    jmp @@SKIP_BUFFER
+    ; weird place to put buffer aint it
+    BUFFER_START db 0ffh, 00h
+    BUFFER db 16 dup(?)
+    @@SKIP_BUFFER:
+
     lea si, PASSWORD_HASH_UPPER
     cmp bx, [si]
     jne @@INCORRECT
     lea si, PASSWORD_HASH_LOWER
     cmp dx, [si]
-    jne @@INCORRECT
+    je @@CORRECT
+
+    @@INCORRECT:
+    Puts INCORRECT_MSG
+    Puts TIMEOUT_MSG_1
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    Puts TIMEOUT_MSG_2
+    Exit 0d
 
     @@CORRECT:
     Puts CORRECT_MSG
 	Exit 0d
 
-    @@INCORRECT:
-    Puts INCORRECT_MSG
-    Exit 0d
+    nop
+    nop
+    jmp @@CORRECT
 
 PROMPT_MSG    db 'Mirror mirror on the wall, who is the fairest of them all?', 0dh, 0ah, '$'
 INCORRECT_MSG db 'Wrong!$'
@@ -61,9 +80,6 @@ CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
 NEWLINE db 0dh, 0ah, '$'
 PASSWORD_HASH_UPPER dw 05b96h
 PASSWORD_HASH_LOWER dw 0bc0eh
-
-BUFFER_START db 0ffh, 00h
-BUFFER db 16 dup(?)
 
 ;-------------
 ;
