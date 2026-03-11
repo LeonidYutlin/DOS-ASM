@@ -68,7 +68,7 @@ Start:
     call ConvertTime
     sub bx, 1
     cmp bx, si
-    jb @@CHECK_TIME
+    jl @@CHECK_TIME
     je @@TIMEOUT_OVER
 
     @@CORRECT:
