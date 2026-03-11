@@ -63,6 +63,12 @@ BUFFER db 16 dup(?)
 ; Expect:
 ;-------------
 
+; macro for code below
+SHLC macro
+    shl bx, 1
+    shl dx, 1
+    adc bx, 0h
+endm
 
 ;-------------
 ; Hash - calculates 32-bit hash of a CX bytes starting from SI
@@ -71,7 +77,7 @@ BUFFER db 16 dup(?)
 ;         SI -> string of bytes
 ; Output: BX - higher 16 bits of a hash
 ;         DX - lower  16 bits of a hash
-; Destr: AX, SI, CX
+; Destr: AX, SI, CX, BP
 ; Expect: CLD
 ;-------------
 Hash proc
@@ -82,16 +88,26 @@ Hash proc
     xor dx, dx
     xor bx, bx
     xor ah, ah
+    mov bp, sp
     @@LOOP:
+        push dx
+        push bx
         ; dx *= 37
-        mov ax, dx
-        shl dx, 3
-        add dx, ax
-        shl dx, 2
-        add dx, ax
+        shlc
+        shlc
+        shlc
+        add dx, [bp - 2]
+        adc bx, [bp - 4]
+        shlc
+        shlc
+        add dx, [bp - 2]
+        adc bx, [bp - 4]
 
+        xor ah, ah
         lodsb
         add dx, ax
+        adc bx, 0h
+        add sp, 4
     loop @@LOOP
     ret
 endp
