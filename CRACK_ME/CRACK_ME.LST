@@ -1,0 +1,173 @@
+Turbo Assembler	 Version 4.1	    03/11/26 17:58:34	    Page 1
+crack_me.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5				     locals @@
+      6
+      7				     ;-------------
+      8				     ; Exit - macro that exits the program with	a given	exit code
+      9				     ; Destr: AX
+     10				     ;-------------
+     11				     Exit	     macro exitCode
+     12					     mov ah, 4ch
+     13					     mov al, exitCode
+     14					     int 21h
+     15						     endm
+     16
+     17				     ;-------------
+     18				     ; Puts - macro that puts a	string into stdout, using 09h'th DOS fn	via int	21
+     19				     ; Destr: ax, dx
+     20				     ;-------------
+     21				     Puts	     macro str
+     22					     mov ah, 09h
+     23					     lea dx, str
+     24					     int 21h
+     25						     endm
+     26
+     27	0100			     Start:
+     28					 Puts PROMPT_MSG
+1    29	0100  B4 09			     mov ah, 09h
+1    30	0102  BA 0127r			     lea dx, PROMPT_MSG
+1    31	0105  CD 21			     int 21h
+     32
+     33	0107  B4 0A			 mov ah, 0ah
+     34	0109  BA 018Fr			 lea dx, BUFFER_START
+     35	010C  CD 15			 int 21
+     36
+     37	010E  EB 01 90			 jmp @@CORRECT
+     38
+     39
+     40	0111				 @@INCORRECT:
+     41
+     42	0111				 @@CORRECT:
+     43	0111  B9 0190r			 lea cx, BUFFER_START +	1
+     44	0114  BE 0191r			 lea si, BUFFER
+     45	0117  E8 0087			 call hash
+     46					 Puts CORRECT_MSG
+1    47	011A  B4 09			     mov ah, 09h
+1    48	011C  BA 0184r			     lea dx, CORRECT_MSG
+1    49	011F  CD 21			     int 21h
+     50					     Exit 0d
+1    51	0121  B4 4C			     mov ah, 4ch
+1    52	0123  B0 00			     mov al, 0d
+1    53	0125  CD 21			     int 21h
+     54
+     55	0127  4D 69 72 72 6F 72	20+  PROMPT_MSG	   db 'Mirror mirror on	the wall, who is the fairest of	them all?', 0dh, 0ah, '$'
+     56	      6D 69 72 72 6F 72	20+
+     57	      6F 6E 20 74 68 65	20+
+Turbo Assembler	 Version 4.1	    03/11/26 17:58:34	    Page 2
+crack_me.asm
+
+
+
+     58	      77 61 6C 6C 2C 20	77+
+     59	      68 6F 20 69 73 20	74+
+     60	      68 65 20 66 61 69	72+
+     61	      65 73 74 20 6F 66	20+
+     62	      74 68 65 6D 20 61	6C+
+     63	      6C 3F 0D 0A 24
+     64	0164  57 72 6F 6E 67 21	24   INCORRECT_MSG db 'Wrong!$'
+     65	016B  54 72 79 20 61 67	61+  TIMEOUT_MSG_1 db 'Try again in $'
+     66	      69 6E 20 69 6E 20	24
+     67	0179  20 73 65 63 6F 6E	64+  TIMEOUT_MSG_2 db '	seconds', 0dh, 0ah, '$'
+     68	      73 0D 0A 24
+     69	0184  43 6F 72 72 65 63	74+  CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
+     70	      21 0D 0A 24
+     71
+     72	018F  FF 00		     BUFFER_START db 0ffh, 00h
+     73	0191  10*(??)		     BUFFER db 16 dup(?)
+     74
+     75				     ;-------------
+     76				     ;
+     77				     ; Input:
+     78				     ; Output:
+     79				     ; Destr:
+     80				     ; Expect:
+     81				     ;-------------
+     82
+     83
+     84				     ;-------------
+     85				     ; Hash - calculates 32-bit	hash of	a CX bytes starting from SI
+     86				     ;	      if CX = 0, nothing happens
+     87				     ; Input:  CX =  number of bytes
+     88				     ;	       SI -> string of bytes
+     89				     ; Output: BX - higher 16 bits of a	hash
+     90				     ;	       AX - lower  16 bits of a	hash
+     91				     ; Destr: DX
+     92				     ;-------------
+     93	01A1			     Hash proc
+     94	01A1  85 C9			 test cx, cx
+     95	01A3  75 01			 jnz @@START
+     96	01A5  C3			 ret
+     97	01A6				 @@START:
+     98	01A6  33 C0			 xor ax, ax
+     99	01A8  33 DB			 xor bx, bx
+    100	01AA				 @@LOOP:
+    101					     ; ax *= 37
+    102	01AA  8B D0			     mov dx, ax
+    103	01AC  D1 E0 D1 E0 D1 E0		     shl ax, 3
+    104	01B2  03 C2			     add ax, dx
+    105	01B4  D1 E0 D1 E0		     shl ax, 2
+    106	01B8  03 C2			     add ax, dx
+    107	01BA  8B 14			     mov dx, [si]
+    108	01BC  03 04			     add ax, [si]
+    109	01BE  46			     inc si
+    110	01BF  E2 E9			 loop @@LOOP
+    111	01C1  C3			 ret
+    112	01C2			     endp
+    113
+    114				     end     Start
+Turbo Assembler	 Version 4.1	    03/11/26 17:58:34	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/11/26"
+??FILENAME			  Text	 "crack_me"
+??TIME				  Text	 "17:58:34"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@CORRECT			  Near	 DGROUP:0111
+@@INCORRECT			  Near	 DGROUP:0111
+@@LOOP				  Near	 DGROUP:01AA
+@@START				  Near	 DGROUP:01A6
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 CRACK_ME
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+BUFFER				  Byte	 DGROUP:0191
+BUFFER_START			  Byte	 DGROUP:018F
+CORRECT_MSG			  Byte	 DGROUP:0184
+HASH				  Near	 DGROUP:01A1
+INCORRECT_MSG			  Byte	 DGROUP:0164
+PROMPT_MSG			  Byte	 DGROUP:0127
+START				  Near	 DGROUP:0100
+TIMEOUT_MSG_1			  Byte	 DGROUP:016B
+TIMEOUT_MSG_2			  Byte	 DGROUP:0179
+
+Macro Name
+
+EXIT
+PUTS
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  01C2 Word	  Public  CODE
+
