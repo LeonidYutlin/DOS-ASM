@@ -25,6 +25,7 @@ Puts  		macro str
 		endm
 
 Start:
+    @@TIMEOUT_OVER:
     Puts PROMPT_MSG
 
     mov ah, 0ah
@@ -51,43 +52,57 @@ Start:
     lea si, PASSWORD_HASH_LOWER
     cmp dx, [si]
     je @@CORRECT
+    jmp @@INCORRECT
 
     @@INCORRECT:
     Puts INCORRECT_MSG
     Puts TIMEOUT_MSG_1
-    nop
-    nop
-    nop
-    nop
-    nop
-    nop
     Puts TIMEOUT_MSG_2
-    Exit 0d
+    mov ah, 2ch
+    int 21h ; get sys time
+    call ConvertTime ; convert time to minutes only in bx
+    mov si, bx
+    @@CHECK_TIME:
+    mov ah, 2ch
+    int 21h
+    call ConvertTime
+    sub bx, 1
+    cmp bx, si
+    jb @@CHECK_TIME
+    je @@TIMEOUT_OVER
 
     @@CORRECT:
     Puts CORRECT_MSG
 	Exit 0d
 
-    nop
-    nop
-    jmp @@CORRECT
-
 PROMPT_MSG    db 'Mirror mirror on the wall, who is the fairest of them all?', 0dh, 0ah, '$'
 INCORRECT_MSG db 'Wrong!$'
-TIMEOUT_MSG_1 db 'Try again in $'
-TIMEOUT_MSG_2 db ' seconds', 0dh, 0ah, '$'
+TIMEOUT_MSG_1 db 'Try again in 1$'
+TIMEOUT_MSG_2 db ' minute', 0dh, 0ah, '$'
 CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
 NEWLINE db 0dh, 0ah, '$'
 PASSWORD_HASH_UPPER dw 05b96h
 PASSWORD_HASH_LOWER dw 0bc0eh
 
 ;-------------
-;
-; Input:
-; Output:
-; Destr:
-; Expect:
+; ConvertTime - converts CH hours and CL minutes into BX minutes
+; Input:  CH - hours
+;         CL - minutes
+; Output: BX - minutes
+; Destr:  AX, CH
 ;-------------
+ConvertTime proc
+    xor ax, ax
+    mov al, ch
+    xor bx, bx
+    mov bl, ch
+    shl bx, 4
+    sub bx, ax
+    shl bx, 2
+    xor ch, ch
+    add bx, cx
+    ret
+endp
 
 ; Macros for Hash proc only!
 SHL_ALL macro
