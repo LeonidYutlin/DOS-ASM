@@ -41,45 +41,18 @@ Handler proc
     int 21h ; get sys time
     call ConvertTime ; convert time to minutes only in bx
     mov si, bx
-    ;xor ch, ch
-    ;sub cl, 5
-    ;mov ah, 2dh
-    ;int 21h
+	mov ah, 09h
+    push cs
+    pop ds
+	lea dx, MSG_STALL
+	int 21h
     @@CHECK_TIME:
-	;mov ah, 09h
-    ;push cs
-    ;pop ds
-	;lea dx, MSG_STALL
-	;int 21h
     mov ah, 2ch
     int 21h
     call ConvertTime
     sub bx, 2
     cmp bx, si
     jle @@CHECK_TIME
-
-    ;mov ch, 23
-    ;mov ah, 2dh
-    ;int 21h
-    ;cmp al, 0d
-    ;jne @@FAILED
-    ;mov ah, 2ch
-    ;int 21h
-    ;mov ah, 09h
-    ;push cs
-    ;pop ds
-	;lea dx, MSG
-	;int 21h
-    jmp @@SKIP
-    @@FAILED:
-    mov ah, 2ch
-    int 21h
-    mov ah, 09h
-    push cs
-    pop ds
-	lea dx, MSG_FAILED
-	int 21h
-
     @@SKIP:
 
 	;in al, 61h
@@ -127,9 +100,7 @@ ConvertTime proc
 endp
 
 
-MSG db 'Time Modified!!!!', 0dh, 0ah, '$'
-MSG_FAILED db 'Time Modification Failed...', 0dh, 0ah, '$'
-MSG_STALL db 'Stalling...', 0dh, 0ah, '$'
+MSG_STALL db 'And NOW we WAIT...', 0dh, 0ah, '$'
 
 EOP:
 

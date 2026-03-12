@@ -1,0 +1,161 @@
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:41	    Page 1
+stall.asm
+
+
+
+      1	0000			     .model tiny
+      2	0000			     .code
+      3				     org 100h
+      4
+      5	0100			     Start:
+      6	0100  B8 3509			     mov ax, 3509h
+      7	0103  CD 21			     int 21h
+      8	0105  89 1E 0167r		     mov OriginalOffset, bx
+      9	0109  8C C3			     mov bx, es
+     10	010B  89 1E 0169r		     mov OriginalSegment, bx
+     11
+     12	010F  33 C0			     xor ax, ax
+     13	0111  50			     push ax
+     14	0112  07			     pop es
+     15
+     16	0113  FA			     cli
+     17	0114  BB 0024			     mov bx, 09h * 4
+     18	0117  26: C7 07	0134r		     mov es:[bx], offset Handler
+     19	011C  8C C8			     mov ax, cs
+     20	011E  26: 89 47	02		     mov es:[bx	+ 2], ax
+     21	0122  FB			     sti
+     22
+     23	0123  B8 3100			     mov ax, 3100h
+     24	0126  BA 019Br			     mov dx, offset EOP
+     25	0129  D1 EA D1 EA D1 EA	D1+	     shr dx, 4
+     26	      EA
+     27	0131  42			     inc dx
+     28	0132  CD 21			     int 21h
+     29
+     30	0134			     Handler proc
+     31	0134  50			     push ax
+     32	0135  51			 push cx
+     33	0136  52			 push dx
+     34	0137  1E			 push ds
+     35	0138  56			     push si
+     36	0139  53			     push bx
+     37
+     38	013A  E4 60			     in	al, 60h
+     39	013C  3C 05			     cmp al, 5d
+     40	013E  75 20			 jne @@SKIP
+     41	0140  B4 2C			     mov ah, 2ch
+     42	0142  CD 21			 int 21h ; get sys time
+     43	0144  E8 0024			 call ConvertTime ; convert time to minutes only in bx
+     44	0147  8B F3			 mov si, bx
+     45	0149  B4 09			     mov ah, 09h
+     46	014B  0E			 push cs
+     47	014C  1F			 pop ds
+     48	014D  BA 0186r			     lea dx, MSG_STALL
+     49	0150  CD 21			     int 21h
+     50	0152				 @@CHECK_TIME:
+     51	0152  B4 2C			 mov ah, 2ch
+     52	0154  CD 21			 int 21h
+     53	0156  E8 0012			 call ConvertTime
+     54	0159  83 EB 02			 sub bx, 2
+     55	015C  3B DE			 cmp bx, si
+     56	015E  7E F2			 jle @@CHECK_TIME
+     57	0160				 @@SKIP:
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:41	    Page 2
+stall.asm
+
+
+
+     58
+     59					     ;in al, 61h
+     60					     ;or al, 80h
+     61					     ;out 61h, al
+     62					     ;and al, not 80h
+     63					     ;out 61h, al
+     64					     ;mov al, 20h
+     65					     ;out 20h, al
+     66
+     67	0160  5B			     pop bx
+     68	0161  5E			     pop si
+     69	0162  1F			 pop ds
+     70	0163  5A			 pop dx
+     71	0164  59			 pop cx
+     72	0165  58			     pop ax
+     73
+     74					     ;iret
+     75
+     76	0166  EA			     db	0eah ; JMP FAR
+     77
+     78	0167  0000		     OriginalOffset dw 0
+     79	0169  0000		     OriginalSegment dw	0
+     80
+     81	016B				     endp
+     82
+     83				     ;-------------
+     84				     ; ConvertTime - converts CH hours and CL minutes into BX minutes
+     85				     ; Input:  CH - hours
+     86				     ;	       CL - minutes
+     87				     ; Output: BX - minutes
+     88				     ; Destr:  AX, CH
+     89				     ;-------------
+     90	016B			     ConvertTime proc
+     91	016B  33 C0			 xor ax, ax
+     92	016D  8A C5			 mov al, ch
+     93	016F  33 DB			 xor bx, bx
+     94	0171  8A DD			 mov bl, ch
+     95	0173  D1 E3 D1 E3 D1 E3	D1+	 shl bx, 4
+     96	      E3
+     97	017B  2B D8			 sub bx, ax
+     98	017D  D1 E3 D1 E3		 shl bx, 2
+     99	0181  32 ED			 xor ch, ch
+    100	0183  03 D9			 add bx, cx
+    101	0185  C3			 ret
+    102	0186			     endp
+    103
+    104
+    105	0186  41 6E 64 20 4E 4F	57+  MSG_STALL db 'And NOW we WAIT...',	0dh, 0ah, '$'
+    106	      20 77 65 20 57 41	49+
+    107	      54 2E 2E 2E 0D 0A	24
+    108
+    109	019B			     EOP:
+    110
+    111				     end Start
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:41	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "03/12/26"
+??FILENAME			  Text	 "stall	  "
+??TIME				  Text	 "23:08:41"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@@CHECK_TIME			  Near	 DGROUP:0152
+@@SKIP				  Near	 DGROUP:0160
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 STALL
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+CONVERTTIME			  Near	 DGROUP:016B
+EOP				  Near	 DGROUP:019B
+HANDLER				  Near	 DGROUP:0134
+MSG_STALL			  Byte	 DGROUP:0186
+ORIGINALOFFSET			  Word	 DGROUP:0167
+ORIGINALSEGMENT			  Word	 DGROUP:0169
+START				  Near	 DGROUP:0100
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  019B Word	  Public  CODE
+

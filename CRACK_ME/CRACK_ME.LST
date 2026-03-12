@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    03/12/26 22:05:37	    Page 1
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 1
 crack_me.asm
 
 
@@ -33,208 +33,204 @@ crack_me.asm
      28	0100				 @@TIMEOUT_OVER:
      29					 Puts PROMPT_MSG
 1    30	0100  B4 09			     mov ah, 09h
-1    31	0102  BA 018Dr			     lea dx, PROMPT_MSG
+1    31	0102  BA 0184r			     lea dx, PROMPT_MSG
 1    32	0105  CD 21			     int 21h
      33
      34	0107  B4 0A			 mov ah, 0ah
-     35	0109  BA 0126r			 lea dx, BUFFER_START
+     35	0109  BA 0126r			 lea dx, BUFFER_HEADER
      36	010C  CD 21			 int 21h
      37					 Puts Newline
 1    38	010E  B4 09			     mov ah, 09h
-1    39	0110  BA 01F5r			     lea dx, Newline
+1    39	0110  BA 01ECr			     lea dx, Newline
 1    40	0113  CD 21			     int 21h
      41
      42	0115  FC			 cld
-     43	0116  BE 0127r			 lea si, BUFFER_START +	1
+     43	0116  BE 0127r			 lea si, BUFFER_HEADER + 1
      44	0119  33 C9			 xor cx, cx
      45	011B  8A 0C			 mov cl, [si]
      46	011D  BE 0128r			 lea si, BUFFER
-     47	0120  E8 00F4			 call hash
+     47	0120  E8 00EB			 call hash
      48
      49	0123  EB 13 90			 jmp @@SKIP_BUFFER
      50					 ; weird place to put buffer aint it
-     51	0126  FF 00			 BUFFER_START db 0ffh, 00h
+     51	0126  FF 00			 BUFFER_HEADER db 0ffh,	00h
      52	0128  10*(??)			 BUFFER	db 16 dup(?)
      53	0138				 @@SKIP_BUFFER:
      54
-     55	0138  BE 01F8r			 lea si, PASSWORD_HASH_UPPER
+     55	0138  BE 01EFr			 lea si, PASSWORD_HASH_UPPER
      56	013B  3B 1C			 cmp bx, [si]
      57	013D  75 0A			 jne @@INCORRECT
-Turbo Assembler	 Version 4.1	    03/12/26 22:05:37	    Page 2
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 2
 crack_me.asm
 
 
 
-     58	013F  BE 01FAr			 lea si, PASSWORD_HASH_LOWER
+     58	013F  BE 01F1r			 lea si, PASSWORD_HASH_LOWER
      59	0142  3B 14			 cmp dx, [si]
-     60	0144  74 3A			 je @@CORRECT
+     60	0144  74 31			 je @@CORRECT
      61	0146  EB 01 90			 jmp @@INCORRECT
      62
      63	0149				 @@INCORRECT:
      64					 Puts INCORRECT_MSG
 1    65	0149  B4 09			     mov ah, 09h
-1    66	014B  BA 01CAr			     lea dx, INCORRECT_MSG
+1    66	014B  BA 01C1r			     lea dx, INCORRECT_MSG
 1    67	014E  CD 21			     int 21h
      68					 Puts TIMEOUT_MSG_1
 1    69	0150  B4 09			     mov ah, 09h
-1    70	0152  BA 01D1r			     lea dx, TIMEOUT_MSG_1
+1    70	0152  BA 01C8r			     lea dx, TIMEOUT_MSG_1
 1    71	0155  CD 21			     int 21h
      72					 Puts TIMEOUT_MSG_2
 1    73	0157  B4 09			     mov ah, 09h
-1    74	0159  BA 01E0r			     lea dx, TIMEOUT_MSG_2
+1    74	0159  BA 01D7r			     lea dx, TIMEOUT_MSG_2
 1    75	015C  CD 21			     int 21h
      76	015E  B4 2C			 mov ah, 2ch
      77	0160  CD 21			 int 21h ; get sys time
-     78	0162  E8 0097			 call ConvertTime ; convert time to minutes only in bx
+     78	0162  E8 008E			 call ConvertTime ; convert time to minutes only in bx
      79	0165  8B F3			 mov si, bx
-     80	0167  32 ED			 xor ch, ch
-     81	0169  80 E9 05			 sub cl, 5
-     82	016C  B4 2D			 mov ah, 2dh
-     83	016E  CD 21			 int 21h
-     84	0170				 @@CHECK_TIME:
-     85	0170  B4 2C			 mov ah, 2ch
-     86	0172  CD 21			 int 21h
-     87	0174  E8 0085			 call ConvertTime
-     88	0177  83 EB 01			 sub bx, 1
-     89	017A  3B DE			 cmp bx, si
-     90	017C  7C F2			 jl @@CHECK_TIME
-     91	017E  74 80			 je @@TIMEOUT_OVER
-     92
-     93	0180				 @@CORRECT:
-     94					 Puts CORRECT_MSG
-1    95	0180  B4 09			     mov ah, 09h
-1    96	0182  BA 01EAr			     lea dx, CORRECT_MSG
-1    97	0185  CD 21			     int 21h
-     98					     Exit 0d
-1    99	0187  B4 4C			     mov ah, 4ch
-1   100	0189  B0 00			     mov al, 0d
-1   101	018B  CD 21			     int 21h
-    102
-    103	018D  4D 69 72 72 6F 72	20+  PROMPT_MSG	   db 'Mirror mirror on	the wall, who is the fairest of	them all?', 0dh, 0ah, '$'
-    104	      6D 69 72 72 6F 72	20+
-    105	      6F 6E 20 74 68 65	20+
-    106	      77 61 6C 6C 2C 20	77+
-    107	      68 6F 20 69 73 20	74+
-    108	      68 65 20 66 61 69	72+
-    109	      65 73 74 20 6F 66	20+
-    110	      74 68 65 6D 20 61	6C+
-    111	      6C 3F 0D 0A 24
-    112	01CA  57 72 6F 6E 67 21	24   INCORRECT_MSG db 'Wrong!$'
-    113	01D1  54 72 79 20 61 67	61+  TIMEOUT_MSG_1 db 'Try again in 1$'
-    114	      69 6E 20 69 6E 20	31+
-Turbo Assembler	 Version 4.1	    03/12/26 22:05:37	    Page 3
+     80	0167				 @@CHECK_TIME:
+     81	0167  B4 2C			 mov ah, 2ch
+     82	0169  CD 21			 int 21h
+     83	016B  E8 0085			 call ConvertTime
+     84	016E  83 EB 01			 sub bx, 1
+     85	0171  3B DE			 cmp bx, si
+     86	0173  7C F2			 jl @@CHECK_TIME
+     87	0175  74 89			 je @@TIMEOUT_OVER
+     88
+     89	0177				 @@CORRECT:
+     90					 Puts CORRECT_MSG
+1    91	0177  B4 09			     mov ah, 09h
+1    92	0179  BA 01E1r			     lea dx, CORRECT_MSG
+1    93	017C  CD 21			     int 21h
+     94					     Exit 0d
+1    95	017E  B4 4C			     mov ah, 4ch
+1    96	0180  B0 00			     mov al, 0d
+1    97	0182  CD 21			     int 21h
+     98
+     99	0184  4D 69 72 72 6F 72	20+  PROMPT_MSG	   db 'Mirror mirror on	the wall, who is the fairest of	them all?', 0dh, 0ah, '$'
+    100	      6D 69 72 72 6F 72	20+
+    101	      6F 6E 20 74 68 65	20+
+    102	      77 61 6C 6C 2C 20	77+
+    103	      68 6F 20 69 73 20	74+
+    104	      68 65 20 66 61 69	72+
+    105	      65 73 74 20 6F 66	20+
+    106	      74 68 65 6D 20 61	6C+
+    107	      6C 3F 0D 0A 24
+    108	01C1  57 72 6F 6E 67 21	24   INCORRECT_MSG db 'Wrong!$'
+    109	01C8  54 72 79 20 61 67	61+  TIMEOUT_MSG_1 db 'Try again in 1$'
+    110	      69 6E 20 69 6E 20	31+
+    111	      24
+    112	01D7  20 6D 69 6E 75 74	65+  TIMEOUT_MSG_2 db '	minute', 0dh, 0ah, '$'
+    113	      0D 0A 24
+    114	01E1  43 6F 72 72 65 63	74+  CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 3
 crack_me.asm
 
 
 
-    115	      24
-    116	01E0  20 6D 69 6E 75 74	65+  TIMEOUT_MSG_2 db '	minute', 0dh, 0ah, '$'
-    117	      0D 0A 24
-    118	01EA  43 6F 72 72 65 63	74+  CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
-    119	      21 0D 0A 24
-    120	01F5  0D 0A 24		     NEWLINE db	0dh, 0ah, '$'
-    121	01F8  5B96		     PASSWORD_HASH_UPPER dw 05b96h
-    122	01FA  BC0E		     PASSWORD_HASH_LOWER dw 0bc0eh
-    123
-    124				     ;-------------
-    125				     ; ConvertTime - converts CH hours and CL minutes into BX minutes
-    126				     ; Input:  CH - hours
-    127				     ;	       CL - minutes
-    128				     ; Output: BX - minutes
-    129				     ; Destr:  AX, CH
-    130				     ;-------------
-    131	01FC			     ConvertTime proc
-    132	01FC  33 C0			 xor ax, ax
-    133	01FE  8A C5			 mov al, ch
-    134	0200  33 DB			 xor bx, bx
-    135	0202  8A DD			 mov bl, ch
-    136	0204  D1 E3 D1 E3 D1 E3	D1+	 shl bx, 4
-    137	      E3
-    138	020C  2B D8			 sub bx, ax
-    139	020E  D1 E3 D1 E3		 shl bx, 2
-    140	0212  32 ED			 xor ch, ch
-    141	0214  03 D9			 add bx, cx
-    142	0216  C3			 ret
-    143	0217			     endp
-    144
-    145				     ; Macros for Hash proc only!
-    146				     SHL_ALL macro
-    147					 shl bx, 1
-    148					 shl dx, 1
-    149					 adc bx, 0h
-    150				     endm
-    151
-    152				     ADD_SELF_TO_ALL macro
-    153					     add dx, [bp - 2]
-    154					 adc bx, [bp - 4]
-    155				     endm
-    156
-    157				     ;-------------
-    158				     ; Hash - calculates 32-bit	hash of	a CX bytes starting from SI
-    159				     ;	      if CX = 0, nothing happens
-    160				     ; Input:  CX =  number of bytes
-    161				     ;	       SI -> string of bytes
-    162				     ; Output: BX - higher 16 bits of a	hash
-    163				     ;	       DX - lower  16 bits of a	hash
-    164				     ; Destr: AX, SI, CX, BP
-    165				     ; Expect: CLD
-    166				     ;-------------
-    167	0217			     Hash proc
-    168	0217  85 C9			 test cx, cx
-    169	0219  75 01			 jnz @@START
-    170	021B  C3			 ret
-    171	021C				 @@START:
-Turbo Assembler	 Version 4.1	    03/12/26 22:05:37	    Page 4
+    115	      21 0D 0A 24
+    116	01EC  0D 0A 24		     NEWLINE	   db 0dh, 0ah,	'$'
+    117	01EF  5B96		     PASSWORD_HASH_UPPER dw 05b96h
+    118	01F1  BC0E		     PASSWORD_HASH_LOWER dw 0bc0eh
+    119
+    120				     ;-------------
+    121				     ; ConvertTime - converts CH hours and CL minutes into BX minutes
+    122				     ; Input:  CH - hours
+    123				     ;	       CL - minutes
+    124				     ; Output: BX - minutes
+    125				     ; Destr:  AX, CH
+    126				     ;-------------
+    127	01F3			     ConvertTime proc
+    128	01F3  33 C0			 xor ax, ax
+    129	01F5  8A C5			 mov al, ch
+    130	01F7  33 DB			 xor bx, bx
+    131	01F9  8A DD			 mov bl, ch
+    132	01FB  D1 E3 D1 E3 D1 E3	D1+	 shl bx, 4
+    133	      E3
+    134	0203  2B D8			 sub bx, ax
+    135	0205  D1 E3 D1 E3		 shl bx, 2
+    136	0209  32 ED			 xor ch, ch
+    137	020B  03 D9			 add bx, cx
+    138	020D  C3			 ret
+    139	020E			     endp
+    140
+    141				     ; Macros for Hash proc only!
+    142				     SHL_ALL macro
+    143					 shl bx, 1
+    144					 shl dx, 1
+    145					 adc bx, 0h
+    146				     endm
+    147
+    148				     ADD_SELF_TO_ALL macro
+    149					     add dx, [bp - 2]
+    150					 adc bx, [bp - 4]
+    151				     endm
+    152
+    153				     ;-------------
+    154				     ; Hash - calculates 32-bit	hash of	a CX bytes starting from SI
+    155				     ;	      if CX = 0, nothing happens
+    156				     ; Input:  CX =  number of bytes
+    157				     ;	       SI -> string of bytes
+    158				     ; Output: BX - higher 16 bits of a	hash
+    159				     ;	       DX - lower  16 bits of a	hash
+    160				     ; Destr: AX, SI, CX, BP
+    161				     ; Expect: CLD
+    162				     ;-------------
+    163	020E			     Hash proc
+    164	020E  85 C9			 test cx, cx
+    165	0210  75 01			 jnz @@START
+    166	0212  C3			 ret
+    167	0213				 @@START:
+    168	0213  33 D2			 xor dx, dx
+    169	0215  33 DB			 xor bx, bx
+    170	0217  32 E4			 xor ah, ah
+    171	0219  8B EC			 mov bp, sp
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 4
 crack_me.asm
 
 
 
-    172	021C  33 D2			 xor dx, dx
-    173	021E  33 DB			 xor bx, bx
-    174	0220  32 E4			 xor ah, ah
-    175	0222  8B EC			 mov bp, sp
-    176	0224				 @@LOOP:
-    177	0224  52			     push dx
-    178	0225  53			     push bx
-    179					     ; hash *= 37
+    172	021B				 @@LOOP:
+    173	021B  52			     push dx
+    174	021C  53			     push bx
+    175					     ; hash *= 37
+    176					     shl_all
+1   177	021D  D1 E3			 shl bx, 1
+1   178	021F  D1 E2			 shl dx, 1
+1   179	0221  83 D3 00			 adc bx, 0h
     180					     shl_all
-1   181	0226  D1 E3			 shl bx, 1
-1   182	0228  D1 E2			 shl dx, 1
-1   183	022A  83 D3 00			 adc bx, 0h
+1   181	0224  D1 E3			 shl bx, 1
+1   182	0226  D1 E2			 shl dx, 1
+1   183	0228  83 D3 00			 adc bx, 0h
     184					     shl_all
-1   185	022D  D1 E3			 shl bx, 1
-1   186	022F  D1 E2			 shl dx, 1
-1   187	0231  83 D3 00			 adc bx, 0h
-    188					     shl_all
-1   189	0234  D1 E3			 shl bx, 1
-1   190	0236  D1 E2			 shl dx, 1
-1   191	0238  83 D3 00			 adc bx, 0h
-    192					     add_self_to_all
-1   193	023B  03 56 FE			     add dx, [bp - 2]
-1   194	023E  13 5E FC			 adc bx, [bp - 4]
+1   185	022B  D1 E3			 shl bx, 1
+1   186	022D  D1 E2			 shl dx, 1
+1   187	022F  83 D3 00			 adc bx, 0h
+    188					     add_self_to_all
+1   189	0232  03 56 FE			     add dx, [bp - 2]
+1   190	0235  13 5E FC			 adc bx, [bp - 4]
+    191					     shl_all
+1   192	0238  D1 E3			 shl bx, 1
+1   193	023A  D1 E2			 shl dx, 1
+1   194	023C  83 D3 00			 adc bx, 0h
     195					     shl_all
-1   196	0241  D1 E3			 shl bx, 1
-1   197	0243  D1 E2			 shl dx, 1
-1   198	0245  83 D3 00			 adc bx, 0h
-    199					     shl_all
-1   200	0248  D1 E3			 shl bx, 1
-1   201	024A  D1 E2			 shl dx, 1
-1   202	024C  83 D3 00			 adc bx, 0h
-    203					     add_self_to_all
-1   204	024F  03 56 FE			     add dx, [bp - 2]
-1   205	0252  13 5E FC			 adc bx, [bp - 4]
-    206	0255  83 C4 04			     add sp, 4
-    207
-    208					     ; hash += <next_char>
-    209	0258  AC			     lodsb
-    210	0259  03 D0			     add dx, ax
-    211	025B  83 D3 00			     adc bx, 0h
-    212	025E  E2 C4			 loop @@LOOP
-    213	0260  C3			 ret
-    214	0261			     endp
-    215
-    216				     end     Start
-Turbo Assembler	 Version 4.1	    03/12/26 22:05:37	    Page 5
+1   196	023F  D1 E3			 shl bx, 1
+1   197	0241  D1 E2			 shl dx, 1
+1   198	0243  83 D3 00			 adc bx, 0h
+    199					     add_self_to_all
+1   200	0246  03 56 FE			     add dx, [bp - 2]
+1   201	0249  13 5E FC			 adc bx, [bp - 4]
+    202	024C  83 C4 04			     add sp, 4
+    203
+    204					     ; hash += <next_char>
+    205	024F  AC			     lodsb
+    206	0250  03 D0			     add dx, ax
+    207	0252  83 D3 00			     adc bx, 0h
+    208	0255  E2 C4			 loop @@LOOP
+    209	0257  C3			 ret
+    210	0258			     endp
+    211
+    212				     end     Start
+Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 5
 Symbol Table
 
 
@@ -244,15 +240,15 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "03/12/26"
 ??FILENAME			  Text	 "crack_me"
-??TIME				  Text	 "22:05:37"
+??TIME				  Text	 "23:08:49"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
-@@CHECK_TIME			  Near	 DGROUP:0170
-@@CORRECT			  Near	 DGROUP:0180
+@@CHECK_TIME			  Near	 DGROUP:0167
+@@CORRECT			  Near	 DGROUP:0177
 @@INCORRECT			  Near	 DGROUP:0149
-@@LOOP				  Near	 DGROUP:0224
+@@LOOP				  Near	 DGROUP:021B
 @@SKIP_BUFFER			  Near	 DGROUP:0138
-@@START				  Near	 DGROUP:021C
+@@START				  Near	 DGROUP:0213
 @@TIMEOUT_OVER			  Near	 DGROUP:0100
 @CODE				  Text	 DGROUP
 @CODESIZE			  Text	 0
@@ -266,18 +262,18 @@ Symbol Name			  Type	 Value
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
 BUFFER				  Byte	 DGROUP:0128
-BUFFER_START			  Byte	 DGROUP:0126
-CONVERTTIME			  Near	 DGROUP:01FC
-CORRECT_MSG			  Byte	 DGROUP:01EA
-HASH				  Near	 DGROUP:0217
-INCORRECT_MSG			  Byte	 DGROUP:01CA
-NEWLINE				  Byte	 DGROUP:01F5
-PASSWORD_HASH_LOWER		  Word	 DGROUP:01FA
-PASSWORD_HASH_UPPER		  Word	 DGROUP:01F8
-PROMPT_MSG			  Byte	 DGROUP:018D
+BUFFER_HEADER			  Byte	 DGROUP:0126
+CONVERTTIME			  Near	 DGROUP:01F3
+CORRECT_MSG			  Byte	 DGROUP:01E1
+HASH				  Near	 DGROUP:020E
+INCORRECT_MSG			  Byte	 DGROUP:01C1
+NEWLINE				  Byte	 DGROUP:01EC
+PASSWORD_HASH_LOWER		  Word	 DGROUP:01F1
+PASSWORD_HASH_UPPER		  Word	 DGROUP:01EF
+PROMPT_MSG			  Byte	 DGROUP:0184
 START				  Near	 DGROUP:0100
-TIMEOUT_MSG_1			  Byte	 DGROUP:01D1
-TIMEOUT_MSG_2			  Byte	 DGROUP:01E0
+TIMEOUT_MSG_1			  Byte	 DGROUP:01C8
+TIMEOUT_MSG_2			  Byte	 DGROUP:01D7
 
 Macro Name
 
@@ -290,5 +286,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  0261 Word	  Public  CODE
+  _TEXT				  16  0258 Word	  Public  CODE
 

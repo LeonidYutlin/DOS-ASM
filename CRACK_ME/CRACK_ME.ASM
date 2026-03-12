@@ -29,12 +29,12 @@ Start:
     Puts PROMPT_MSG
 
     mov ah, 0ah
-    lea dx, BUFFER_START
+    lea dx, BUFFER_HEADER
     int 21h
     Puts Newline
 
     cld
-    lea si, BUFFER_START + 1
+    lea si, BUFFER_HEADER + 1
     xor cx, cx
     mov cl, [si]
     lea si, BUFFER
@@ -42,7 +42,7 @@ Start:
 
     jmp @@SKIP_BUFFER
     ; weird place to put buffer aint it
-    BUFFER_START db 0ffh, 00h
+    BUFFER_HEADER db 0ffh, 00h
     BUFFER db 16 dup(?)
     @@SKIP_BUFFER:
 
@@ -62,10 +62,6 @@ Start:
     int 21h ; get sys time
     call ConvertTime ; convert time to minutes only in bx
     mov si, bx
-    ;xor ch, ch
-    ;sub cl, 5
-    ;mov ah, 2dh
-    ;int 21h
     @@CHECK_TIME:
     mov ah, 2ch
     int 21h
@@ -84,7 +80,7 @@ INCORRECT_MSG db 'Wrong!$'
 TIMEOUT_MSG_1 db 'Try again in 1$'
 TIMEOUT_MSG_2 db ' minute', 0dh, 0ah, '$'
 CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
-NEWLINE db 0dh, 0ah, '$'
+NEWLINE       db 0dh, 0ah, '$'
 PASSWORD_HASH_UPPER dw 05b96h
 PASSWORD_HASH_LOWER dw 0bc0eh
 
