@@ -25,7 +25,7 @@ Puts  		macro str
 		endm
 
 Start:
-    @@TIMEOUT_OVER:
+    @@PROMPT:
     Puts PROMPT_MSG
 
     mov ah, 0ah
@@ -69,7 +69,7 @@ Start:
     sub bx, 1
     cmp bx, si
     jl @@CHECK_TIME
-    je @@TIMEOUT_OVER
+    je @@PROMPT
 
     @@CORRECT:
     Puts CORRECT_MSG

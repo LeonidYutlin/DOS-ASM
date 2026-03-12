@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 1
+Turbo Assembler	 Version 4.1	    03/12/26 23:28:31	    Page 1
 crack_me.asm
 
 
@@ -30,7 +30,7 @@ crack_me.asm
      25						     endm
      26
      27	0100			     Start:
-     28	0100				 @@TIMEOUT_OVER:
+     28	0100				 @@PROMPT:
      29					 Puts PROMPT_MSG
 1    30	0100  B4 09			     mov ah, 09h
 1    31	0102  BA 0184r			     lea dx, PROMPT_MSG
@@ -60,7 +60,7 @@ crack_me.asm
      55	0138  BE 01EFr			 lea si, PASSWORD_HASH_UPPER
      56	013B  3B 1C			 cmp bx, [si]
      57	013D  75 0A			 jne @@INCORRECT
-Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 2
+Turbo Assembler	 Version 4.1	    03/12/26 23:28:31	    Page 2
 crack_me.asm
 
 
@@ -94,7 +94,7 @@ crack_me.asm
      84	016E  83 EB 01			 sub bx, 1
      85	0171  3B DE			 cmp bx, si
      86	0173  7C F2			 jl @@CHECK_TIME
-     87	0175  74 89			 je @@TIMEOUT_OVER
+     87	0175  74 89			 je @@PROMPT
      88
      89	0177				 @@CORRECT:
      90					 Puts CORRECT_MSG
@@ -122,7 +122,7 @@ crack_me.asm
     112	01D7  20 6D 69 6E 75 74	65+  TIMEOUT_MSG_2 db '	minute', 0dh, 0ah, '$'
     113	      0D 0A 24
     114	01E1  43 6F 72 72 65 63	74+  CORRECT_MSG   db 'Correct!', 0dh, 0ah, '$'
-Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 3
+Turbo Assembler	 Version 4.1	    03/12/26 23:28:31	    Page 3
 crack_me.asm
 
 
@@ -184,7 +184,7 @@ crack_me.asm
     169	0215  33 DB			 xor bx, bx
     170	0217  32 E4			 xor ah, ah
     171	0219  8B EC			 mov bp, sp
-Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 4
+Turbo Assembler	 Version 4.1	    03/12/26 23:28:31	    Page 4
 crack_me.asm
 
 
@@ -230,7 +230,7 @@ crack_me.asm
     210	0258			     endp
     211
     212				     end     Start
-Turbo Assembler	 Version 4.1	    03/12/26 23:08:49	    Page 5
+Turbo Assembler	 Version 4.1	    03/12/26 23:28:31	    Page 5
 Symbol Table
 
 
@@ -240,16 +240,16 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "03/12/26"
 ??FILENAME			  Text	 "crack_me"
-??TIME				  Text	 "23:08:49"
+??TIME				  Text	 "23:28:31"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @@CHECK_TIME			  Near	 DGROUP:0167
 @@CORRECT			  Near	 DGROUP:0177
 @@INCORRECT			  Near	 DGROUP:0149
 @@LOOP				  Near	 DGROUP:021B
+@@PROMPT			  Near	 DGROUP:0100
 @@SKIP_BUFFER			  Near	 DGROUP:0138
 @@START				  Near	 DGROUP:0213
-@@TIMEOUT_OVER			  Near	 DGROUP:0100
 @CODE				  Text	 DGROUP
 @CODESIZE			  Text	 0
 @CPU				  Text	 0101H
