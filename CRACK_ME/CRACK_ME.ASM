@@ -62,6 +62,10 @@ Start:
     int 21h ; get sys time
     call ConvertTime ; convert time to minutes only in bx
     mov si, bx
+    ;xor ch, ch
+    ;sub cl, 5
+    ;mov ah, 2dh
+    ;int 21h
     @@CHECK_TIME:
     mov ah, 2ch
     int 21h
