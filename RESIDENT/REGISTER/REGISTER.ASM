@@ -95,6 +95,13 @@ TextColor db 7ch
 DrawBuffer db MAX_LINE * ROW_LEN * 2 dup(?)
 SaveBuffer db MAX_LINE * ROW_LEN * 2 dup(?)
 
+ClearDrawBuffer macro
+	lea di, DrawBuffer
+	xor ax, ax
+	mov cx, MAX_LINE * ROW_LEN
+	rep stosw
+endm
+
 UpdateHandler proc
 	UpdatePushRegs
 
@@ -103,16 +110,13 @@ UpdateHandler proc
 
 	lea bx, Switch
 	cmp byte ptr [bx], 1
-	jne @@Original
+	jne @@JMP_CHAIN_Original
 
 	push cs
 	pop es
 
 	cld
-	lea di, DrawBuffer
-	xor ax, ax
-	mov cx, MAX_LINE * ROW_LEN
-	rep stosw
+	ClearDrawBuffer
 
 	lea di, DrawBuffer
 	lea bx, Position
@@ -120,6 +124,11 @@ UpdateHandler proc
 	mov ax, MSG_LINES_TOTAL_PADDED
 	mov cx, MSG_LENGTH_TOTAL_PADDED
 	call RenderFrame
+
+	jmp @@JMP_CHAIN_SKIP
+	@@JMP_CHAIN_Original:
+	jmp @@Original
+	@@JMP_CHAIN_SKIP:
 
 	mov cx, 14
 	mov bx, sp
@@ -151,7 +160,29 @@ UpdateHandler proc
 	push bx
 	pop es
 	xor di, di
-	rep movsw
+	lea bx, SaveBuffer
+	cld
+	@@MoveToVRAM:
+		cmp word ptr ds:[si], 0
+		je @@Restore
+		mov ax, es:[di]
+		mov ds:[bx], ax
+		movsw
+		add bx, 2
+		jmp @@EndOfMove
+		@@Restore:
+		mov ax, ds:[bx]
+		cmp ax, 0
+		je @@NothingToRestore
+		mov es:[di], ax
+		mov word ptr ds:[bx], 0
+		@@NothingToRestore:
+		add bx, 2
+		add si, 2
+		add di, 2
+		@@EndOfMove:
+	loop @@MoveToVRAM
+
 
 	@@Original:
 
@@ -166,19 +197,23 @@ UpdateHandler proc
 endp
 
 KeyPushRegs macro
+	push es
 	push ds
 	push bx
 	push ax
 	push di
+	push si
 	push cx
 	endm
 
 KeyPopRegs macro
 	pop cx
+	pop si
 	pop di
 	pop ax
 	pop bx
 	pop ds
+	pop es
 	endm
 
 IsCtrlDown db 0
@@ -187,7 +222,9 @@ KeyHandler proc
 	KeyPushRegs
 
 	push cs
-	pop ds
+	pop  ds
+	push cs
+	pop  es
 
 	in al, 60h
 
@@ -252,7 +289,7 @@ KeyHandler proc
 		lea bx, Position
 		mov cx, [bx]
 		test cx, cx
-		jz @@Original
+		jz @@JMP_CHAIN_Original
 		sub word ptr [bx], 2
 		jmp @@Consume
 
@@ -288,6 +325,23 @@ KeyHandler proc
 		jmp @@Consume
 		@@TurnOff:
 			mov Switch, 0
+			cld
+			mov cx, MAX_LINE * ROW_LEN
+			lea si, SaveBuffer
+			mov bx, VIDEOSEG
+			push bx
+			pop es
+			xor di, di
+			@@ReleaseSaveBuffer:
+				mov ax, ds:[si]
+				cmp ax, 0
+				je @@NothingToRestore
+				mov es:[di], ax
+				mov word ptr ds:[si], 0
+				@@NothingToRestore:
+				add si, 2
+				add di, 2
+		loop @@ReleaseSaveBuffer
 		jmp @@Consume
 
 	@@Consume:
