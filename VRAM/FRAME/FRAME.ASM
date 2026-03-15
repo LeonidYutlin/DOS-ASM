@@ -90,7 +90,7 @@ USAGE db 'Usage: frame <message>', 0ah, '$'
 ; Input:  AX =  height
 ;         CX =  length
 ;         DI =  vram offset in bytes
-; Destr:  BX, DI, SI, CX, AX
+; Destr:  BX, DI, SI, CX, AX, BP
 ; Expect: CLD
 ;-------------
 RenderFrame 	proc
