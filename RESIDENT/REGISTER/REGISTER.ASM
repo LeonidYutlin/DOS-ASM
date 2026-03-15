@@ -6,7 +6,7 @@ locals @@
 
 VIDEOSEG   equ 0b800h
 ROW_LEN    equ 80d
-CMD_LINE   equ 80h
+MAX_LINE   equ 25d
 LINE_N     equ 7d
 SHIFT      equ 15d
 F_VER      equ 0bah ; ║
@@ -16,10 +16,14 @@ F_UL       equ 0c9h ; ╔
 F_DR       equ 0bch ; ╝
 F_DL       equ 0c8h ; ╚
 F_WS       equ ' '
-PAD_HOR    equ 2d
-PAD_VER    equ 1d
+PAD_HOR    equ 0d
+PAD_VER    equ 0d
 BACKGROUND equ 79h
 TEXT_COLOR equ 7ch
+MSG_LINES_TOTAL equ (MSG_LEN + 1) / 3
+MSG_LINES_TOTAL_PADDED equ MSG_LINES_TOTAL + (PAD_VER + 1) * 2
+MSG_LENGTH_TOTAL_PADDED equ	3 + 4 + (PAD_HOR + 1) * 2 ; we add padding to 'XX FFFF'
+
 
 Start:
 	mov ax, 3509h
@@ -40,7 +44,7 @@ Start:
 
  	cli
 	mov bx, 09h * 4
-	mov es:[bx], offset SwitchHandler
+	mov es:[bx], offset KeyHandler
 	mov ax, cs
 	mov es:[bx + 2], ax
 	mov bx, 08h * 4
@@ -82,6 +86,7 @@ UpdatePopRegs macro
 	endm
 
 Switch db 0
+Position dw (LINE_N * ROW_LEN + SHIFT) * 2
 
 UpdateHandler proc
 	UpdatePushRegs
@@ -89,7 +94,8 @@ UpdateHandler proc
 	push cs
 	pop ds
 
-	cmp Switch, 1
+	lea bx, Switch
+	cmp byte ptr [bx], 1
 	jne @@Original
 
 	mov bx, VIDEOSEG
@@ -97,16 +103,18 @@ UpdateHandler proc
 	pop es
 
 	cld
-	mov di, (LINE_N * ROW_LEN + SHIFT) * 2d ;
-	mov ax, (PAD_VER + 1) * 2d + 1 ; we add padding and one line for text
-	mov cx, MSG_LEN
-	add cx, (PAD_HOR + 1) * 2d - 1 ; we add padding and remove the space
+	lea bx, Position
+	mov di, [bx]
+	mov ax, MSG_LINES_TOTAL_PADDED
+	mov cx, MSG_LENGTH_TOTAL_PADDED
 	call RenderFrame
 
-	mov di, ((LINE_N + PAD_VER + 1) * ROW_LEN + SHIFT + PAD_HOR + 1) * 2d
+	mov di, ((PAD_VER + 1) * ROW_LEN + PAD_HOR + 1) * 2
+	lea bx, Position
+	add di, [bx]
 	mov cx, MSG_LEN
 	lea si, MSG
-	call RenderString
+	call RenderStringEscaped
 
 	@@Original:
 
@@ -120,49 +128,115 @@ UpdateHandler proc
 	Original08Segment dw 0
 endp
 
-SwitchPushRegs macro
+KeyPushRegs macro
 	push ds
 	push bx
 	push ax
+	push cx
 	endm
 
-SwitchPopRegs macro
+KeyPopRegs macro
+	pop cx
 	pop ax
 	pop bx
 	pop ds
 	endm
 
-SwitchHandler proc
-	SwitchPushRegs
+IsCtrlDown db 0
 
-	in al, 60h
-	cmp al, 3d
-	jne @@Original
+KeyHandler proc
+	KeyPushRegs
 
 	push cs
 	pop ds
 
-	lea bx, Switch
-	cmp byte ptr [bx], 0
-	jne @@TurnOff
-	mov Switch, 1
-	jmp @@Original
-	@@TurnOff:
-		mov Switch, 0
+	in al, 60h
 
-	;in al, 61h
-	;or al, 80h
-	;out 61h, al
-	;and al, not 80h
-	;out 61h, al
-	;mov al, 20h
-	;out 20h, al
+	cmp al, 1dh ; Ctrl Pressed Down
+	jne @@NotCtrlDown
+	lea bx, IsCtrlDown
+	mov byte ptr [bx], 1
+	@@NotCtrlDown:
+	cmp al, 1dh + 128d ; Ctrl Unpressed
+	jne @@NotCtrlUp
+	lea bx, IsCtrlDown
+	mov byte ptr [bx], 0
+	@@NotCtrlUp:
+
+	lea bx, IsCtrlDown
+	cmp byte ptr [bx], 1
+	jne @@JMP_CHAIN_Original
+
+	cmp al, 12h ; 'E'
+	je @@SwitchKey
+	cmp al, 48h ; Up Arrow Key
+	je @@MoveUpKey
+	cmp al, 50h ; Down Arrow Key
+	je @@MoveDownKey
+	cmp al, 4bh ; Left Arrow Key
+	je @@MoveLeftKey
+	cmp al, 4dh ; Right Arrow Key
+	je @@MoveRightKey
+	jmp @@Original
+
+	@@MoveLeftKey:
+		lea bx, Position
+		mov cx, [bx]
+		test cx, cx
+		jz @@Original
+		sub word ptr [bx], 2
+		jmp @@Consume
+
+	@@MoveRightKey:
+		lea bx, Position
+		cmp word ptr [bx], ((MAX_LINE - MSG_LINES_TOTAL_PADDED + 1) * ROW_LEN - MSG_LENGTH_TOTAL_PADDED) * 2
+		je @@Original
+		add word ptr [bx], 2
+		jmp @@Consume
+
+	@@JMP_CHAIN_Original:
+	jmp @@Original
+
+	@@MoveUpKey:
+		lea bx, Position
+		cmp word ptr [bx], ROW_LEN * 2
+		jb @@Original
+		sub word ptr [bx], ROW_LEN * 2
+		jmp @@Consume
+
+	@@MoveDownKey:
+		lea bx, Position
+		cmp word ptr [bx], (MAX_LINE - MSG_LINES_TOTAL_PADDED) * ROW_LEN * 2
+		jae @@Original
+		add word ptr [bx], ROW_LEN * 2
+		jmp @@Consume
+
+	@@SwitchKey:
+		lea bx, Switch
+		cmp byte ptr [bx], 0
+		jne @@TurnOff
+		mov Switch, 1
+		jmp @@Consume
+		@@TurnOff:
+			mov Switch, 0
+		jmp @@Consume
+
+	@@Consume:
+
+	in al, 61h
+	or al, 80h
+	out 61h, al
+	and al, not 80h
+	out 61h, al
+	mov al, 20h
+	out 20h, al
+
+	KeyPopRegs
+	iret
 
 	@@Original:
 
-	SwitchPopRegs
-
-	;iret
+	KeyPopRegs
 
 	db 0eah ; JMP FAR
 
@@ -171,7 +245,7 @@ SwitchHandler proc
 
 	endp
 
-MSG db 'AX$BX$CX$DX$SI$DI'
+MSG db 'AX$BX$CX$DX$SI$DI$BP$SP$DS$SS$ES$CS$IP'
 MSG_LEN equ $ - MSG
 
 ;-------------
@@ -288,6 +362,43 @@ RenderFrameLine	proc
 	@@EXIT:
 		ret
 		endp
+
+;-------------
+; RenderStringEscaped - renders CX bytes from SI
+;		 to ES starting from pos DX,
+;		 with TEXT_COLOR color attribute.
+;		 When encounters '$' character,
+;		 shifts in vram by one line down,
+;		 effectively mimicking a newline escape
+; Input:  SI -> string to render
+;         CX =  number of bytes to render
+;         DI =  vram offset in bytes
+; Destr:  BX, DI, SI, CX
+; Expect: CLD
+;-------------
+RenderStringEscaped	proc
+	test cx, cx
+	jz @@EXIT
+    mov ah, TEXT_COLOR
+	push di
+	@@LOOP_BODY:
+                lodsb
+				cmp al, '$'
+				jne @@RENDER_CHAR
+				pop di
+				add di, ROW_LEN * 2
+				push di
+				jmp @@SKIP_RENDER_CHAR
+				@@RENDER_CHAR:
+                stosw
+				@@SKIP_RENDER_CHAR:
+		loop @@LOOP_BODY
+	pop di
+	@@EXIT:
+		ret
+		endp
+
+
 
 ;-------------
 ; RenderString - renders CX bytes from SI
