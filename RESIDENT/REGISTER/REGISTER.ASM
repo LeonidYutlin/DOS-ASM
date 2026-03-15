@@ -108,22 +108,11 @@ UpdateHandler proc
 	push cs
 	pop es
 
-	; clear frame inside draw buf and 2 by 2 space around it
 	cld
 	lea di, DrawBuffer
-	lea bx, Position
-	add di, [bx]
-	sub di, 2 + ROW_LEN * 2
 	xor ax, ax
-	mov bx, (ROW_LEN - MSG_LENGTH_TOTAL_PADDED - 2) * 2
-	mov cx, MSG_LINES_TOTAL_PADDED + 2
-	@@ClearDrawBuf:
-		push cx
-		mov cx, MSG_LENGTH_TOTAL_PADDED + 2
-		rep stosw
-		pop cx
-		add di, bx
-	loop @@ClearDrawBuf
+	mov cx, MAX_LINE * ROW_LEN
+	rep stosw
 
 	lea di, DrawBuffer
 	lea bx, Position
