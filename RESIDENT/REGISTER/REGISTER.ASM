@@ -59,29 +59,31 @@ Start:
 	int 21h
 
 UpdatePushRegs macro
-	push ax
-	push bx
-	push es
-	push cx
-	push dx
-	push si
-	push di
-	push ds
 	push ss
+	push es
+	push ds
+	push sp
 	push bp
+	push di
+	push si
+	push dx
+	push cx
+	push bx
+	push ax
 	endm
 
 UpdatePopRegs macro
-	pop bp
-	pop ss
-	pop ds
-	pop di
-	pop si
-	pop dx
-	pop cx
-	pop es
-	pop bx
 	pop ax
+	pop bx
+	pop cx
+	pop dx
+	pop si
+	pop di
+	pop bp
+	pop sp
+	pop ds
+	pop es
+	pop ss
 	endm
 
 Switch db 0
@@ -109,6 +111,23 @@ UpdateHandler proc
 	mov ax, MSG_LINES_TOTAL_PADDED
 	mov cx, MSG_LENGTH_TOTAL_PADDED
 	call RenderFrame
+
+	mov cx, 11
+	mov bx, sp
+	lea di, MSG + 3
+	@@ModifyMsgLoop:
+	mov ax, ss:[bx]
+	mov ax, 0abcdh
+	push cx
+	push bx
+	call Int16ToHex
+	pop bx
+	mov [di],     cx
+	mov [di + 2], ax
+	add di, MSG_LENGTH_TOTAL + 1 ; + 1 for '$'
+	add bx, 2
+	pop cx
+	loop @@ModifyMsgLoop
 
 	mov di, ((PAD_VER + 1) * ROW_LEN + PAD_HOR + 1) * 2
 	lea bx, Position
@@ -276,7 +295,7 @@ KeyHandler proc
 
 	endp
 
-MSG db 'AX 0000$BX 0000$CX 0000$DX 0000$SI 0000$DI 0000$BP 0000$SP 0000$DS 0000$SS 0000$ES 0000$CS 0000$IP 0000'
+MSG db 'AX 0000$BX 0000$CX 0000$DX 0000$SI 0000$DI 0000$BP 0000$SP 0000$DS 0000$SS 0000$ES 0000$CS 0000'
 MSG_LEN equ $ - MSG
 
 ;-------------
@@ -433,68 +452,20 @@ RenderStringEscaped	proc
 		ret
 		endp
 
-;-------------
-; RenderString - renders CX bytes from SI
-;		 to ES starting from pos DX,
-;		 with TextColor color attribute
-; Input:  SI -> string to render
-;         CX =  number of bytes to render
-;         DI =  vram offset in bytes
-; Destr:  BX, DI, SI, CX
-; Expect: CLD
-;-------------
-RenderString	proc
-	test cx, cx
-	jz @@EXIT
-	lea bx, TextColor
-    mov ah, [bx]
-	@@LOOP_BODY:
-                lodsb
-                stosw
-		loop @@LOOP_BODY
-	@@EXIT:
-		ret
-		endp
-
-;-------------
-; RenderHexBytes - renders CX bytes as hex codes from SI
-;		 to ES starting from pos DX,
-;		 with TextColor color attribute
-; Input:  SI -> string to render
-;         CX =  number of bytes to render
-;         DI =  vram offset in bytes
-; Destr:  AX, SI, CX, DI, BX
-;-------------
-RenderHexBytes	proc
-	test cx, cx
-	jz @@EXIT
-	lea bx, TextColor
-	mov bh, [bx]
-	@@LOOP_BODY:
-		mov al, [si]
-		call CharToHex
-		mov es:byte ptr[di],     al
-		mov es:byte ptr[di + 1], bh
-		mov es:byte ptr[di + 2], ah
-		mov es:byte ptr[di + 3], bh
-		inc si
-		add di, 4
-		loop @@LOOP_BODY
-	@@EXIT:
-		ret
-		endp
-
 HEX_ALPHA db '0123456789ABCDEF'
 
 ;-------------
-; CharToHex - takes char at AL and converts it to
-;			  it's 2-byte hex code (upper byte is stored in AH, lower in AL)
-; Input:	AL = char to convert
+; Int16ToHex - takes int16 at AX and converts it to
+;			  it's 4 char long hex code
+; Input:	AX = int16 to convert
 ; Output:	AH = first hex byte
 ;			AL = second hex byte
+;			CH = third hex byte
+;			CL = fourth hex byte
 ; Destr:    BX
 ;-------------
-CharToHex	proc
+Int16ToHex	proc
+		push ax
 		mov ah, al
 		shr al, 4
 		and ah, 0fh
@@ -506,6 +477,18 @@ CharToHex	proc
 		mov bx, offset HEX_ALPHA
 		add bl, ah
 		mov ah, [bx]
+		pop cx
+		mov cl, ch
+		shr cl, 4
+		and ch, 0fh
+
+		mov bx, offset HEX_ALPHA
+		add bl, cl
+		mov cl, [bx]
+
+		mov bx, offset HEX_ALPHA
+		add bl, ch
+		mov ch, [bx]
 		ret
 		endp
 
