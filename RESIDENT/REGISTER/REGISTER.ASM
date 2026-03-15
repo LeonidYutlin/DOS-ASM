@@ -92,6 +92,8 @@ Switch db 0
 Position dw (LINE_N * ROW_LEN + SHIFT) * 2
 Background db 79h
 TextColor db 7ch
+DrawBuffer db MAX_LINE * ROW_LEN * 2 dup(?)
+SaveBuffer db MAX_LINE * ROW_LEN * 2 dup(?)
 
 UpdateHandler proc
 	UpdatePushRegs
@@ -103,13 +105,29 @@ UpdateHandler proc
 	cmp byte ptr [bx], 1
 	jne @@Original
 
-	mov bx, VIDEOSEG
-	push bx
+	push cs
 	pop es
 
+	; clear frame inside draw buf and 2 by 2 space around it
 	cld
+	lea di, DrawBuffer
 	lea bx, Position
-	mov di, [bx]
+	add di, [bx]
+	sub di, 2 + ROW_LEN * 2
+	xor ax, ax
+	mov bx, (ROW_LEN - MSG_LENGTH_TOTAL_PADDED - 2) * 2
+	mov cx, MSG_LINES_TOTAL_PADDED + 2
+	@@ClearDrawBuf:
+		push cx
+		mov cx, MSG_LENGTH_TOTAL_PADDED + 2
+		rep stosw
+		pop cx
+		add di, bx
+	loop @@ClearDrawBuf
+
+	lea di, DrawBuffer
+	lea bx, Position
+	add di, [bx]
 	mov ax, MSG_LINES_TOTAL_PADDED
 	mov cx, MSG_LENGTH_TOTAL_PADDED
 	call RenderFrame
@@ -130,12 +148,21 @@ UpdateHandler proc
 	pop cx
 	loop @@ModifyMsgLoop
 
-	mov di, ((PAD_VER + 1) * ROW_LEN + PAD_HOR + 1) * 2
+	lea di, DrawBuffer
+	add di, ((PAD_VER + 1) * ROW_LEN + PAD_HOR + 1) * 2
 	lea bx, Position
 	add di, [bx]
 	mov cx, MSG_LEN
 	lea si, MSG
 	call RenderStringEscaped
+
+	mov cx, MAX_LINE * ROW_LEN
+	lea si, DrawBuffer
+	mov bx, VIDEOSEG
+	push bx
+	pop es
+	xor di, di
+	rep movsw
 
 	@@Original:
 
@@ -153,11 +180,13 @@ KeyPushRegs macro
 	push ds
 	push bx
 	push ax
+	push di
 	push cx
 	endm
 
 KeyPopRegs macro
 	pop cx
+	pop di
 	pop ax
 	pop bx
 	pop ds
