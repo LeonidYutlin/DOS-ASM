@@ -16,13 +16,12 @@ F_UL       equ 0c9h ; ╔
 F_DR       equ 0bch ; ╝
 F_DL       equ 0c8h ; ╚
 F_WS       equ ' '
-PAD_HOR    equ 0d
-PAD_VER    equ 0d
-BACKGROUND equ 79h
-TEXT_COLOR equ 7ch
-MSG_LINES_TOTAL equ (MSG_LEN + 1) / 3
+PAD_HOR    equ 2d
+PAD_VER    equ 1d
+MSG_LENGTH_TOTAL equ 3 + 4
+MSG_LINES_TOTAL equ (MSG_LEN + 1) / MSG_LENGTH_TOTAL - 1
 MSG_LINES_TOTAL_PADDED equ MSG_LINES_TOTAL + (PAD_VER + 1) * 2
-MSG_LENGTH_TOTAL_PADDED equ	3 + 4 + (PAD_HOR + 1) * 2 ; we add padding to 'XX FFFF'
+MSG_LENGTH_TOTAL_PADDED equ	MSG_LENGTH_TOTAL + (PAD_HOR + 1) * 2 ; we add padding to 'XX FFFF'
 
 
 Start:
@@ -87,6 +86,8 @@ UpdatePopRegs macro
 
 Switch db 0
 Position dw (LINE_N * ROW_LEN + SHIFT) * 2
+Background db 79h
+TextColor db 7ch
 
 UpdateHandler proc
 	UpdatePushRegs
@@ -156,16 +157,46 @@ KeyHandler proc
 	jne @@NotCtrlDown
 	lea bx, IsCtrlDown
 	mov byte ptr [bx], 1
+	jmp @@JMP_CHAIN_Original
 	@@NotCtrlDown:
 	cmp al, 1dh + 128d ; Ctrl Unpressed
 	jne @@NotCtrlUp
 	lea bx, IsCtrlDown
 	mov byte ptr [bx], 0
+	jmp @@JMP_CHAIN_Original
 	@@NotCtrlUp:
 
 	lea bx, IsCtrlDown
 	cmp byte ptr [bx], 1
 	jne @@JMP_CHAIN_Original
+
+	cmp al, 23h ; 'H'
+	jne @@NotH
+	lea bx, Background
+	inc byte ptr [bx]
+	jmp @@Consume
+	@@NotH:
+
+	cmp al, 24h ; 'J'
+	jne @@NotJ
+	lea bx, Background
+	dec byte ptr [bx]
+	jmp @@Consume
+	@@NotJ:
+
+	cmp al, 25h ; 'K'
+	jne @@NotK
+	lea bx, TextColor
+	inc byte ptr [bx]
+	jmp @@Consume
+	@@NotK:
+
+	cmp al, 26h ; 'L'
+	jne @@NotL
+	lea bx, TextColor
+	dec byte ptr [bx]
+	jmp @@Consume
+	@@NotL:
 
 	cmp al, 12h ; 'E'
 	je @@SwitchKey
@@ -245,7 +276,7 @@ KeyHandler proc
 
 	endp
 
-MSG db 'AX$BX$CX$DX$SI$DI$BP$SP$DS$SS$ES$CS$IP'
+MSG db 'AX 0000$BX 0000$CX 0000$DX 0000$SI 0000$DI 0000$BP 0000$SP 0000$DS 0000$SS 0000$ES 0000$CS 0000$IP 0000'
 MSG_LEN equ $ - MSG
 
 ;-------------
@@ -303,7 +334,7 @@ FrameBits db F_UL, F_HOR, F_UR, F_VER, F_WS, F_VER, F_DL, F_HOR, F_DR, F_WS, F_W
 ;-------------
 ; RenderFrameLine - renders a line of CX bytes
 ;		 to ES starting from pos DX,
-;		 with BACKGROUND color attribute
+;		 with Background color attribute
 ; Input:  AL =  frame part:
 ;		0 = top,
 ;		1 = middle,
@@ -326,7 +357,10 @@ RenderFrameLine	proc
 	inc di
 
 	push ax
-	mov ax, BACKGROUND
+	push bx
+	lea bx, Background
+	mov al, [bx]
+	pop bx
 	push cx
 	rep stosw
 	pop cx
@@ -379,7 +413,8 @@ RenderFrameLine	proc
 RenderStringEscaped	proc
 	test cx, cx
 	jz @@EXIT
-    mov ah, TEXT_COLOR
+	lea bx, TextColor
+    mov ah, [bx]
 	push di
 	@@LOOP_BODY:
                 lodsb
@@ -398,12 +433,10 @@ RenderStringEscaped	proc
 		ret
 		endp
 
-
-
 ;-------------
 ; RenderString - renders CX bytes from SI
 ;		 to ES starting from pos DX,
-;		 with TEXT_COLOR color attribute
+;		 with TextColor color attribute
 ; Input:  SI -> string to render
 ;         CX =  number of bytes to render
 ;         DI =  vram offset in bytes
@@ -413,7 +446,8 @@ RenderStringEscaped	proc
 RenderString	proc
 	test cx, cx
 	jz @@EXIT
-        mov ah, TEXT_COLOR
+	lea bx, TextColor
+    mov ah, [bx]
 	@@LOOP_BODY:
                 lodsb
                 stosw
@@ -425,22 +459,24 @@ RenderString	proc
 ;-------------
 ; RenderHexBytes - renders CX bytes as hex codes from SI
 ;		 to ES starting from pos DX,
-;		 with TEXT_COLOR color attribute
+;		 with TextColor color attribute
 ; Input:  SI -> string to render
 ;         CX =  number of bytes to render
 ;         DI =  vram offset in bytes
-; Destr:  AX, SI, CX, DI
+; Destr:  AX, SI, CX, DI, BX
 ;-------------
 RenderHexBytes	proc
 	test cx, cx
 	jz @@EXIT
+	lea bx, TextColor
+	mov bh, [bx]
 	@@LOOP_BODY:
 		mov al, [si]
 		call CharToHex
 		mov es:byte ptr[di],     al
-		mov es:byte ptr[di + 1], TEXT_COLOR
+		mov es:byte ptr[di + 1], bh
 		mov es:byte ptr[di + 2], ah
-		mov es:byte ptr[di + 3], TEXT_COLOR
+		mov es:byte ptr[di + 3], bh
 		inc si
 		add di, 4
 		loop @@LOOP_BODY
