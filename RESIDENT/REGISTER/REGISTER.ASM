@@ -7,7 +7,7 @@ locals @@
 VIDEOSEG   equ 0b800h
 ROW_LEN    equ 80d
 MAX_LINE   equ 25d
-LINE_N     equ 7d
+LINE_N     equ 4d
 SHIFT      equ 15d
 F_VER      equ 0bah ; ║
 F_HOR      equ 0cdh ; ═
@@ -19,7 +19,7 @@ F_WS       equ ' '
 PAD_HOR    equ 2d
 PAD_VER    equ 1d
 MSG_LENGTH_TOTAL equ 3 + 4
-MSG_LINES_TOTAL equ (MSG_LEN + 1) / MSG_LENGTH_TOTAL - 1
+MSG_LINES_TOTAL equ (MSG_LEN + 1) / (MSG_LENGTH_TOTAL + 1)
 MSG_LINES_TOTAL_PADDED equ MSG_LINES_TOTAL + (PAD_VER + 1) * 2
 MSG_LENGTH_TOTAL_PADDED equ	MSG_LENGTH_TOTAL + (PAD_HOR + 1) * 2 ; we add padding to 'XX FFFF'
 
@@ -70,9 +70,11 @@ UpdatePushRegs macro
 	push cx
 	push bx
 	push ax
+	pushf
 	endm
 
 UpdatePopRegs macro
+	popf ; pomoysya
 	pop ax
 	pop bx
 	pop cx
@@ -112,12 +114,11 @@ UpdateHandler proc
 	mov cx, MSG_LENGTH_TOTAL_PADDED
 	call RenderFrame
 
-	mov cx, 11
+	mov cx, 14
 	mov bx, sp
 	lea di, MSG + 3
 	@@ModifyMsgLoop:
 	mov ax, ss:[bx]
-	mov ax, 0abcdh
 	push cx
 	push bx
 	call Int16ToHex
@@ -295,7 +296,7 @@ KeyHandler proc
 
 	endp
 
-MSG db 'AX 0000$BX 0000$CX 0000$DX 0000$SI 0000$DI 0000$BP 0000$SP 0000$DS 0000$SS 0000$ES 0000$CS 0000'
+MSG db 'FL 0000$AX 0000$BX 0000$CX 0000$DX 0000$SI 0000$DI 0000$BP 0000$SP 0000$DS 0000$SS 0000$ES 0000$IP 0000$CS 0000'
 MSG_LEN equ $ - MSG
 
 ;-------------
