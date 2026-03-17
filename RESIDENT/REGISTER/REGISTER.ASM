@@ -325,16 +325,23 @@ KeyHandler proc
 
 	@@MoveLeftKey:
 		lea bx, Position
-		mov cx, [bx]
-		cmp cx, 0
-		jbe @@JMP_CHAIN_Original
+		mov ax, [bx]
+		mov cl, ROW_LEN * 2
+		div cl
+		cmp ah, 0
+		je @@JMP_CHAIN_Original
 		sub word ptr [bx], 2
 		jmp @@Consume
 
 	@@MoveRightKey:
 		lea bx, Position
-		cmp word ptr [bx], ((MAX_LINE - MSG_LINES_TOTAL_PADDED + 1) * ROW_LEN - MSG_LENGTH_TOTAL_PADDED) * 2
-		jae @@Original
+		mov ax, [bx]
+		add ax, MSG_LENGTH_TOTAL_PADDED
+		add ax, MSG_LENGTH_TOTAL_PADDED
+		mov cl, ROW_LEN * 2
+		div cl
+		cmp ah, 0
+		je @@JMP_CHAIN_Original
 		add word ptr [bx], 2
 		jmp @@Consume
 

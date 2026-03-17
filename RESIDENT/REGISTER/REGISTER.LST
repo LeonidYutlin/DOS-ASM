@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 1
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 1
 register.asm
 
 
@@ -33,9 +33,9 @@ register.asm
      28	0100			     Start:
      29	0100  B8 3509			     mov ax, 3509h
      30	0103  CD 21			     int 21h
-     31	0105  89 1E 22B0r		     mov Original09Offset, bx
+     31	0105  89 1E 22BFr		     mov Original09Offset, bx
      32	0109  8C C3			     mov bx, es
-     33	010B  89 1E 22B2r		     mov Original09Segment, bx
+     33	010B  89 1E 22C1r		     mov Original09Segment, bx
      34
      35	010F  B8 3508			     mov ax, 3508h
      36	0112  CD 21			     int 21h
@@ -60,7 +60,7 @@ register.asm
      55
      56	0140  0E			     push cs
      57	0141  07			     pop es
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 2
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 2
 register.asm
 
 
@@ -70,10 +70,10 @@ register.asm
      60	0148  03 3F			     add di, [bx]
      61	014A  B8 0012			     mov ax, MSG_LINES_TOTAL_PADDED
      62	014D  B9 000D			     mov cx, MSG_LENGTH_TOTAL_PADDED
-     63	0150  E8 21D0			     call RenderFrame
+     63	0150  E8 21DF			     call RenderFrame
      64
      65	0153  B8 3100			     mov ax, 3100h
-     66	0156  BA 2410r			     mov dx, offset EOP
+     66	0156  BA 241Fr			     mov dx, offset EOP
      67	0159  D1 EA D1 EA D1 EA	D1+	     shr dx, 4
      68	      EA
      69	0161  42			     inc dx
@@ -122,7 +122,7 @@ register.asm
 1   112	20AA  06			     push es
 1   113	20AB  1E			     push ds
 1   114	20AC  54			     push sp
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 3
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 3
 register.asm
 
 
@@ -184,7 +184,7 @@ register.asm
     169	20FF  07			     pop es
     170
     171	2100  BF 0169r			     lea di, DrawBuffer
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 4
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 4
 register.asm
 
 
@@ -193,7 +193,7 @@ register.asm
     173	2106  03 3F			     add di, [bx]
     174	2108  B8 0012			     mov ax, MSG_LINES_TOTAL_PADDED
     175	210B  B9 000D			     mov cx, MSG_LENGTH_TOTAL_PADDED
-    176	210E  E8 0212			     call RenderFrame
+    176	210E  E8 0221			     call RenderFrame
     177
     178	2111  EB 04 90			     jmp @@JMP_CHAIN_SKIP
     179	2114				     @@JMP_CHAIN_Original:
@@ -202,12 +202,12 @@ register.asm
     182
     183	2117  B9 000E			     mov cx, 14
     184	211A  8B DC			     mov bx, sp
-    185	211C  BF 22B7r			     lea di, MSG + 3
+    185	211C  BF 22C6r			     lea di, MSG + 3
     186	211F				     @@ModifyMsgLoop:
     187	211F  36: 8B 07				     mov ax, ss:[bx]
     188	2122  51				     push cx
     189	2123  53				     push bx
-    190	2124  E8 02B0				     call Int16ToHex
+    190	2124  E8 02BF				     call Int16ToHex
     191	2127  5B				     pop bx
     192	2128  89 0D				     mov [di],	   cx
     193	212A  89 45 02				     mov [di + 2], ax
@@ -221,8 +221,8 @@ register.asm
     201	213D  BB 0165r			     lea bx, Position
     202	2140  03 3F			     add di, [bx]
     203	2142  B9 006F 90		     mov cx, MSG_LEN
-    204	2146  BE 22B4r			     lea si, MSG
-    205	2149  E8 025E			     call RenderStringEscaped
+    204	2146  BE 22C3r			     lea si, MSG
+    205	2149  E8 026D			     call RenderStringEscaped
     206
     207	214C  B9 07D0			     mov cx, MAX_LINE *	ROW_LEN
     208	214F  BE 0169r			     lea si, DrawBuffer
@@ -246,7 +246,7 @@ register.asm
     226	2173					     @@Restore:
     227	2173  83 3F 00				     cmp word ptr ds:[bx], 0
     228	2176  74 09				     je	@@NothingToRestore
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 5
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 5
 register.asm
 
 
@@ -308,7 +308,7 @@ register.asm
     283	219D  00		     IsCtrlDown	db 0
     284
     285	219E			     KeyHandler	proc
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 6
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 6
 register.asm
 
 
@@ -333,409 +333,415 @@ register.asm
     303	21AD  75 09			     jne @@NotCtrlDown
     304	21AF  BB 219Dr			     lea bx, IsCtrlDown
     305	21B2  C6 07 01			     mov byte ptr [bx],	1
-    306	21B5  EB 7C 90			     jmp @@JMP_CHAIN_Original
+    306	21B5  E9 008A			     jmp @@JMP_CHAIN_Original
     307	21B8				     @@NotCtrlDown:
     308	21B8  3C 9D			     cmp al, 1dh + 128d	; Ctrl Unpressed
     309	21BA  75 09			     jne @@NotCtrlUp
     310	21BC  BB 219Dr			     lea bx, IsCtrlDown
     311	21BF  C6 07 00			     mov byte ptr [bx],	0
-    312	21C2  EB 6F 90			     jmp @@JMP_CHAIN_Original
+    312	21C2  EB 7E 90			     jmp @@JMP_CHAIN_Original
     313	21C5				     @@NotCtrlUp:
     314
     315	21C5  BB 219Dr			     lea bx, IsCtrlDown
     316	21C8  80 3F 01			     cmp byte ptr [bx],	1
-    317	21CB  75 66			     jne @@JMP_CHAIN_Original
+    317	21CB  75 75			     jne @@JMP_CHAIN_Original
     318
     319	21CD  3C 23			     cmp al, 23h ; 'H'
     320	21CF  75 08			     jne @@NotH
     321	21D1  BB 0167r			     lea bx, Background
     322	21D4  FE 07			     inc byte ptr [bx]
-    323	21D6  E9 00B9			     jmp @@Consume
+    323	21D6  E9 00C8			     jmp @@Consume
     324	21D9				     @@NotH:
     325
     326	21D9  3C 24			     cmp al, 24h ; 'J'
     327	21DB  75 08			     jne @@NotJ
     328	21DD  BB 0167r			     lea bx, Background
     329	21E0  FE 0F			     dec byte ptr [bx]
-    330	21E2  E9 00AD			     jmp @@Consume
+    330	21E2  E9 00BC			     jmp @@Consume
     331	21E5				     @@NotJ:
     332
     333	21E5  3C 25			     cmp al, 25h ; 'K'
     334	21E7  75 08			     jne @@NotK
     335	21E9  BB 0168r			     lea bx, TextColor
     336	21EC  FE 07			     inc byte ptr [bx]
-    337	21EE  E9 00A1			     jmp @@Consume
+    337	21EE  E9 00B0			     jmp @@Consume
     338	21F1				     @@NotK:
     339
     340	21F1  3C 26			     cmp al, 26h ; 'L'
     341	21F3  75 08			     jne @@NotL
     342	21F5  BB 0168r			     lea bx, TextColor
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 7
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 7
 register.asm
 
 
 
     343	21F8  FE 0F			     dec byte ptr [bx]
-    344	21FA  E9 0095			     jmp @@Consume
+    344	21FA  E9 00A4			     jmp @@Consume
     345	21FD				     @@NotL:
     346
     347	21FD  3C 12			     cmp al, 12h ; 'E'
-    348	21FF  74 55			     je	@@SwitchKey
+    348	21FF  74 64			     je	@@SwitchKey
     349	2201  3C 48			     cmp al, 48h ; Up Arrow Key
-    350	2203  74 31			     je	@@MoveUpKey
+    350	2203  74 40			     je	@@MoveUpKey
     351	2205  3C 50			     cmp al, 50h ; Down	Arrow Key
-    352	2207  74 3D			     je	@@MoveDownKey
+    352	2207  74 4C			     je	@@MoveDownKey
     353	2209  3C 4B			     cmp al, 4bh ; Left	Arrow Key
     354	220B  74 07			     je	@@MoveLeftKey
     355	220D  3C 4D			     cmp al, 4dh ; Right Arrow Key
-    356	220F  74 13			     je	@@MoveRightKey
-    357	2211  E9 0094			     jmp @@Original
+    356	220F  74 17			     je	@@MoveRightKey
+    357	2211  E9 00A3			     jmp @@Original
     358
     359	2214				     @@MoveLeftKey:
     360	2214  BB 0165r				     lea bx, Position
-    361	2217  8B 0F				     mov cx, [bx]
-    362	2219  83 F9 00				     cmp cx, 0
-    363	221C  76 15				     jbe @@JMP_CHAIN_Original
-    364	221E  83 2F 02				     sub word ptr [bx],	2
-    365	2221  EB 6F 90				     jmp @@Consume
-    366
-    367	2224				     @@MoveRightKey:
-    368	2224  BB 0165r				     lea bx, Position
-    369	2227  81 3F 04E6			     cmp word ptr [bx],	((MAX_LINE - MSG_LINES_TOTAL_PADDED + 1) * ROW_LEN -	    +
-    370				     MSG_LENGTH_TOTAL_PADDED) *	2
-    371	222B  73 7B				     jae @@Original
-    372	222D  83 07 02				     add word ptr [bx],	2
-    373	2230  EB 60 90				     jmp @@Consume
-    374
-    375	2233				     @@JMP_CHAIN_Original:
-    376	2233  EB 73 90			     jmp @@Original
-    377
-    378	2236				     @@MoveUpKey:
-    379	2236  BB 0165r				     lea bx, Position
-    380	2239  81 3F 00A0			     cmp word ptr [bx],	ROW_LEN	* 2
-    381	223D  72 69				     jb	@@Original
-    382	223F  81 2F 00A0			     sub word ptr [bx],	ROW_LEN	* 2
-    383	2243  EB 4D 90				     jmp @@Consume
-    384
-    385	2246				     @@MoveDownKey:
-    386	2246  BB 0165r				     lea bx, Position
-    387	2249  81 3F 0460			     cmp word ptr [bx],	(MAX_LINE - MSG_LINES_TOTAL_PADDED) * ROW_LEN *	2
-    388	224D  73 59				     jae @@Original
-    389	224F  81 07 00A0			     add word ptr [bx],	ROW_LEN	* 2
-    390	2253  EB 3D 90				     jmp @@Consume
-    391
-    392	2256				     @@SwitchKey:
-    393	2256  BB 0164r				     lea bx, Switch
-    394	2259  80 3F 00				     cmp byte ptr [bx],	0
-    395	225C  75 08				     jne @@TurnOff
-    396	225E  C6 06 0164r 01			     mov Switch, 1
-    397	2263  EB 2D 90				     jmp @@Consume
-    398	2266					     @@TurnOff:
-    399	2266  C6 06 0164r 00				     mov Switch, 0
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 8
+    361	2217  8B 07				     mov ax, [bx]
+    362	2219  B1 A0				     mov cl, ROW_LEN * 2
+    363	221B  F6 F1				     div cl
+    364	221D  80 FC 00				     cmp ah, 0
+    365	2220  74 20				     je	@@JMP_CHAIN_Original
+    366	2222  83 2F 02				     sub word ptr [bx],	2
+    367	2225  EB 7A 90				     jmp @@Consume
+    368
+    369	2228				     @@MoveRightKey:
+    370	2228  BB 0165r				     lea bx, Position
+    371	222B  8B 07				     mov ax, [bx]
+    372	222D  05 000D				     add ax, MSG_LENGTH_TOTAL_PADDED
+    373	2230  05 000D				     add ax, MSG_LENGTH_TOTAL_PADDED
+    374	2233  B1 A0				     mov cl, ROW_LEN * 2
+    375	2235  F6 F1				     div cl
+    376	2237  80 FC 00				     cmp ah, 0
+    377	223A  74 06				     je	@@JMP_CHAIN_Original
+    378	223C  83 07 02				     add word ptr [bx],	2
+    379	223F  EB 60 90				     jmp @@Consume
+    380
+    381	2242				     @@JMP_CHAIN_Original:
+    382	2242  EB 73 90			     jmp @@Original
+    383
+    384	2245				     @@MoveUpKey:
+    385	2245  BB 0165r				     lea bx, Position
+    386	2248  81 3F 00A0			     cmp word ptr [bx],	ROW_LEN	* 2
+    387	224C  72 69				     jb	@@Original
+    388	224E  81 2F 00A0			     sub word ptr [bx],	ROW_LEN	* 2
+    389	2252  EB 4D 90				     jmp @@Consume
+    390
+    391	2255				     @@MoveDownKey:
+    392	2255  BB 0165r				     lea bx, Position
+    393	2258  81 3F 0460			     cmp word ptr [bx],	(MAX_LINE - MSG_LINES_TOTAL_PADDED) * ROW_LEN *	2
+    394	225C  73 59				     jae @@Original
+    395	225E  81 07 00A0			     add word ptr [bx],	ROW_LEN	* 2
+    396	2262  EB 3D 90				     jmp @@Consume
+    397
+    398	2265				     @@SwitchKey:
+    399	2265  BB 0164r				     lea bx, Switch
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 8
 register.asm
 
 
 
-    400	226B  FC					     cld
-    401	226C  B9 07D0					     mov cx, MAX_LINE *	ROW_LEN
-    402	226F  BE 1109r					     lea si, SaveBuffer
-    403	2272  BB B800					     mov bx, VIDEOSEG
-    404	2275  53					     push bx
-    405	2276  07					     pop es
-    406	2277  33 FF					     xor di, di
-    407	2279						     @@ReleaseSaveBuffer:
-    408	2279  8B 04						     mov ax, ds:[si]
-    409	227B  3D 0000						     cmp ax, 0
-    410	227E  74 07						     je	@@NothingToRestore
-    411	2280  26: 89 05						     mov es:[di], ax
-    412	2283  C7 04 0000					     mov word ptr ds:[si], 0
-    413	2287							     @@NothingToRestore:
-    414	2287  83 C6 02						     add si, 2
-    415	228A  83 C7 02						     add di, 2
-    416	228D  E2 EA				     loop @@ReleaseSaveBuffer
-    417	228F  EB 01 90				     jmp @@Consume
-    418
-    419	2292				     @@Consume:
-    420
-    421	2292  E4 61			     in	al, 61h
-    422	2294  0C 80			     or	al, 80h
-    423	2296  E6 61			     out 61h, al
-    424	2298  24 7F			     and al, not 80h
-    425	229A  E6 61			     out 61h, al
-    426	229C  B0 20			     mov al, 20h
-    427	229E  E6 20			     out 20h, al
-    428
-    429					     KeyPopRegs
-1   430	22A0  59			     pop cx
-1   431	22A1  5E			     pop si
-1   432	22A2  5F			     pop di
-1   433	22A3  58			     pop ax
-1   434	22A4  5B			     pop bx
-1   435	22A5  1F			     pop ds
-1   436	22A6  07			     pop es
-    437	22A7  CF			     iret
-    438
-    439	22A8				     @@Original:
-    440
-    441					     KeyPopRegs
-1   442	22A8  59			     pop cx
-1   443	22A9  5E			     pop si
-1   444	22AA  5F			     pop di
-1   445	22AB  58			     pop ax
-1   446	22AC  5B			     pop bx
-1   447	22AD  1F			     pop ds
-1   448	22AE  07			     pop es
-    449
-    450	22AF  EA			     db	0eah ; JMP FAR
-    451
-    452	22B0  0000			     Original09Offset dw 0
-    453	22B2  0000			     Original09Segment dw 0
-    454
-    455	22B4				     endp
-    456
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 9
+    400	2268  80 3F 00				     cmp byte ptr [bx],	0
+    401	226B  75 08				     jne @@TurnOff
+    402	226D  C6 06 0164r 01			     mov Switch, 1
+    403	2272  EB 2D 90				     jmp @@Consume
+    404	2275					     @@TurnOff:
+    405	2275  C6 06 0164r 00				     mov Switch, 0
+    406	227A  FC					     cld
+    407	227B  B9 07D0					     mov cx, MAX_LINE *	ROW_LEN
+    408	227E  BE 1109r					     lea si, SaveBuffer
+    409	2281  BB B800					     mov bx, VIDEOSEG
+    410	2284  53					     push bx
+    411	2285  07					     pop es
+    412	2286  33 FF					     xor di, di
+    413	2288						     @@ReleaseSaveBuffer:
+    414	2288  8B 04						     mov ax, ds:[si]
+    415	228A  3D 0000						     cmp ax, 0
+    416	228D  74 07						     je	@@NothingToRestore
+    417	228F  26: 89 05						     mov es:[di], ax
+    418	2292  C7 04 0000					     mov word ptr ds:[si], 0
+    419	2296							     @@NothingToRestore:
+    420	2296  83 C6 02						     add si, 2
+    421	2299  83 C7 02						     add di, 2
+    422	229C  E2 EA				     loop @@ReleaseSaveBuffer
+    423	229E  EB 01 90				     jmp @@Consume
+    424
+    425	22A1				     @@Consume:
+    426
+    427	22A1  E4 61			     in	al, 61h
+    428	22A3  0C 80			     or	al, 80h
+    429	22A5  E6 61			     out 61h, al
+    430	22A7  24 7F			     and al, not 80h
+    431	22A9  E6 61			     out 61h, al
+    432	22AB  B0 20			     mov al, 20h
+    433	22AD  E6 20			     out 20h, al
+    434
+    435					     KeyPopRegs
+1   436	22AF  59			     pop cx
+1   437	22B0  5E			     pop si
+1   438	22B1  5F			     pop di
+1   439	22B2  58			     pop ax
+1   440	22B3  5B			     pop bx
+1   441	22B4  1F			     pop ds
+1   442	22B5  07			     pop es
+    443	22B6  CF			     iret
+    444
+    445	22B7				     @@Original:
+    446
+    447					     KeyPopRegs
+1   448	22B7  59			     pop cx
+1   449	22B8  5E			     pop si
+1   450	22B9  5F			     pop di
+1   451	22BA  58			     pop ax
+1   452	22BB  5B			     pop bx
+1   453	22BC  1F			     pop ds
+1   454	22BD  07			     pop es
+    455
+    456	22BE  EA			     db	0eah ; JMP FAR
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 9
 register.asm
 
 
 
-    457	22B4  46 4C 20 30 30 30	30+  MSG db 'FL	0000$AX	0000$BX	0000$CX	0000$DX	0000$SI	0000$DI	0000$BP	0000$SP	0000$DS	0000$SS	    +
-    458	      24 41 58 20 30 30	30+  0000$ES 0000$IP 0000$CS 0000'
-    459	      30 24 42 58 20 30	30+
-    460	      30 30 24 43 58 20	30+
-    461	      30 30 30 24 44 58	20+
-    462	      30 30 30 30 24 53	49+
-    463	      20 30 30 30 30 24	44+
-    464	      49 20 30 30 30 30	24+
-    465	      42 50 20 30 30 30	30+
-    466	      24 53 50 20 30 30	30+
-    467	      30 24 44 53 20 30	30+
-    468	      30 30 24 53 53 20	30+
-    469	      30 30 30 24 45 53	20+
-    470	      30 30 30 30 24 49	50+
-    471	      20 30 30 30 30 24	43+
-    472	      53 20 30 30 30 30
-    473	      =006F		     MSG_LEN equ $ - MSG
-    474
-    475				     ;-------------
-    476				     ; RenderFrame - renders CX	by AX bytes from SI
-    477				     ;		      to ES starting from pos DX,
-    478				     ;		      with BACKGROUND color attribute
-    479				     ; Input:  AX =  height
-    480				     ;	       CX =  length
-    481				     ;	       DI =  vram offset in bytes
-    482				     ; Destr:  BX, DI, SI, CX, AX, BP
-    483				     ; Expect: CLD
-    484				     ;-------------
-    485	2323			     RenderFrame     proc
-    486	2323  85 C9			     test cx, cx
-    487	2325  74 2F			     jz	@@EXIT
-    488	2327  85 C0			     test ax, ax
-    489	2329  74 2B			     jz	@@EXIT
-    490	232B  8B EC			     mov bp, sp
-    491
-    492	232D  51			     push cx
-    493	232E  BB 0050			     mov bx, ROW_LEN
-    494	2331  43			     inc bx
-    495	2332  2B D9			     sub bx, cx	; potential overflow here but no solution for now
-    496	2334  D1 E3			     shl bx, 1 ; now bx	contains how much we need to shift per iteration
-    497	2336  8B C8			     mov cx, ax
-    498	2338  B0 00			     mov al, 0
-    499	233A				     @@LOOP_LINES:
-    500	233A  51				     push cx ; save ax'ed cx
-    501	233B  8B 4E FE				     mov cx, ss:[bp - 2]; retrieve arg cx to cx
-    502	233E  E8 0022				     call RenderFrameLine
-    503
-    504	2341  3C 01				     cmp al, 1
-    505	2343  74 02				     je	@@DONT_SET
-    506	2345  B0 01				     mov al, 1 ; switch	to middle mode
-    507
-    508	2347					     @@DONT_SET:
-    509	2347  03 FB				     add di, bx
-    510	2349  59				     pop cx ; restore ax'ed cx
-    511
-    512	234A  83 F9 02				     cmp cx, 2 ; check if it is	time to	change the frame to bottom mode
-    513	234D  75 02				     jne @@LOOP_CHECK
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 10
+    457
+    458	22BF  0000			     Original09Offset dw 0
+    459	22C1  0000			     Original09Segment dw 0
+    460
+    461	22C3				     endp
+    462
+    463	22C3  46 4C 20 30 30 30	30+  MSG db 'FL	0000$AX	0000$BX	0000$CX	0000$DX	0000$SI	0000$DI	0000$BP	0000$SP	0000$DS	0000$SS	    +
+    464	      24 41 58 20 30 30	30+  0000$ES 0000$IP 0000$CS 0000'
+    465	      30 24 42 58 20 30	30+
+    466	      30 30 24 43 58 20	30+
+    467	      30 30 30 24 44 58	20+
+    468	      30 30 30 30 24 53	49+
+    469	      20 30 30 30 30 24	44+
+    470	      49 20 30 30 30 30	24+
+    471	      42 50 20 30 30 30	30+
+    472	      24 53 50 20 30 30	30+
+    473	      30 24 44 53 20 30	30+
+    474	      30 30 24 53 53 20	30+
+    475	      30 30 30 24 45 53	20+
+    476	      30 30 30 30 24 49	50+
+    477	      20 30 30 30 30 24	43+
+    478	      53 20 30 30 30 30
+    479	      =006F		     MSG_LEN equ $ - MSG
+    480
+    481				     ;-------------
+    482				     ; RenderFrame - renders CX	by AX bytes from SI
+    483				     ;		      to ES starting from pos DX,
+    484				     ;		      with BACKGROUND color attribute
+    485				     ; Input:  AX =  height
+    486				     ;	       CX =  length
+    487				     ;	       DI =  vram offset in bytes
+    488				     ; Destr:  BX, DI, SI, CX, AX, BP
+    489				     ; Expect: CLD
+    490				     ;-------------
+    491	2332			     RenderFrame     proc
+    492	2332  85 C9			     test cx, cx
+    493	2334  74 2F			     jz	@@EXIT
+    494	2336  85 C0			     test ax, ax
+    495	2338  74 2B			     jz	@@EXIT
+    496	233A  8B EC			     mov bp, sp
+    497
+    498	233C  51			     push cx
+    499	233D  BB 0050			     mov bx, ROW_LEN
+    500	2340  43			     inc bx
+    501	2341  2B D9			     sub bx, cx	; potential overflow here but no solution for now
+    502	2343  D1 E3			     shl bx, 1 ; now bx	contains how much we need to shift per iteration
+    503	2345  8B C8			     mov cx, ax
+    504	2347  B0 00			     mov al, 0
+    505	2349				     @@LOOP_LINES:
+    506	2349  51				     push cx ; save ax'ed cx
+    507	234A  8B 4E FE				     mov cx, ss:[bp - 2]; retrieve arg cx to cx
+    508	234D  E8 0022				     call RenderFrameLine
+    509
+    510	2350  3C 01				     cmp al, 1
+    511	2352  74 02				     je	@@DONT_SET
+    512	2354  B0 01				     mov al, 1 ; switch	to middle mode
+    513
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 10
 register.asm
 
 
 
-    514	234F  B0 02				     mov al, 2
-    515
-    516	2351					     @@LOOP_CHECK:
-    517	2351  E2 E7					     loop @@LOOP_LINES
-    518
-    519	2353  83 C4 02			     add sp, 2
-    520
-    521	2356				     @@EXIT:
-    522	2356  C3				     ret
-    523	2357						     endp
+    514	2356					     @@DONT_SET:
+    515	2356  03 FB				     add di, bx
+    516	2358  59				     pop cx ; restore ax'ed cx
+    517
+    518	2359  83 F9 02				     cmp cx, 2 ; check if it is	time to	change the frame to bottom mode
+    519	235C  75 02				     jne @@LOOP_CHECK
+    520	235E  B0 02				     mov al, 2
+    521
+    522	2360					     @@LOOP_CHECK:
+    523	2360  E2 E7					     loop @@LOOP_LINES
     524
-    525	2357  C9 CD BB BA 20 BA	C8+  FrameBits db F_UL,	F_HOR, F_UR, F_VER, F_WS, F_VER, F_DL, F_HOR, F_DR, F_WS, F_WS,	F_WS
-    526	      CD BC 20 20 20
-    527
-    528				     ;-------------
-    529				     ; RenderFrameLine - renders a line	of CX bytes
-    530				     ;		      to ES starting from pos DX,
-    531				     ;		      with Background color attribute
-    532				     ; Input:  AL =  frame part:
-    533				     ;		     0 = top,
-    534				     ;		     1 = middle,
-    535				     ;		     2 = bottom,
-    536				     ;		     other = whitespace-filled line
-    537				     ;	       CX =  number of bytes to	render
-    538				     ;	       DI =  vram offset in bytes
-    539				     ; Destr:  CX, AX, SI, DI
-    540				     ; Expect: CLD
-    541				     ;-------------
-    542	2363			     RenderFrameLine proc
-    543	2363  85 C9			     test cx, cx
-    544	2365  75 01			     jnz @@SKIP_RET
-    545	2367  C3			     ret ; too far to JZ to @@EXIT
-    546	2368				     @@SKIP_RET:
-    547
-    548					     ; set background color attributes
-    549	2368  32 E4			     xor ah, ah
-    550	236A  57			     push di
-    551	236B  47			     inc di
-    552
-    553	236C  50			     push ax
-    554	236D  53			     push bx
-    555	236E  BB 0167r			     lea bx, Background
-    556	2371  8A 07			     mov al, [bx]
-    557	2373  5B			     pop bx
-    558	2374  51			     push cx
-    559	2375  F3> AB			     rep stosw
-    560	2377  59			     pop cx
-    561	2378  58			     pop ax
-    562	2379  5F			     pop di
-    563
-    564					     ; decide the mode
-    565	237A  3C 02			     cmp al, 2
-    566	237C  76 02			     jna @@START_RENDER
-    567	237E  B0 03			     mov al, 3
-    568
-    569	2380				     @@START_RENDER:
-    570	2380  BE 2357r			     mov si, offset FrameBits
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 11
+    525	2362  83 C4 02			     add sp, 2
+    526
+    527	2365				     @@EXIT:
+    528	2365  C3				     ret
+    529	2366						     endp
+    530
+    531	2366  C9 CD BB BA 20 BA	C8+  FrameBits db F_UL,	F_HOR, F_UR, F_VER, F_WS, F_VER, F_DL, F_HOR, F_DR, F_WS, F_WS,	F_WS
+    532	      CD BC 20 20 20
+    533
+    534				     ;-------------
+    535				     ; RenderFrameLine - renders a line	of CX bytes
+    536				     ;		      to ES starting from pos DX,
+    537				     ;		      with Background color attribute
+    538				     ; Input:  AL =  frame part:
+    539				     ;		     0 = top,
+    540				     ;		     1 = middle,
+    541				     ;		     2 = bottom,
+    542				     ;		     other = whitespace-filled line
+    543				     ;	       CX =  number of bytes to	render
+    544				     ;	       DI =  vram offset in bytes
+    545				     ; Destr:  CX, AX, SI, DI
+    546				     ; Expect: CLD
+    547				     ;-------------
+    548	2372			     RenderFrameLine proc
+    549	2372  85 C9			     test cx, cx
+    550	2374  75 01			     jnz @@SKIP_RET
+    551	2376  C3			     ret ; too far to JZ to @@EXIT
+    552	2377				     @@SKIP_RET:
+    553
+    554					     ; set background color attributes
+    555	2377  32 E4			     xor ah, ah
+    556	2379  57			     push di
+    557	237A  47			     inc di
+    558
+    559	237B  50			     push ax
+    560	237C  53			     push bx
+    561	237D  BB 0167r			     lea bx, Background
+    562	2380  8A 07			     mov al, [bx]
+    563	2382  5B			     pop bx
+    564	2383  51			     push cx
+    565	2384  F3> AB			     rep stosw
+    566	2386  59			     pop cx
+    567	2387  58			     pop ax
+    568	2388  5F			     pop di
+    569
+    570					     ; decide the mode
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 11
 register.asm
 
 
 
-    571	2383  03 F0			     add si, ax
-    572	2385  D1 E0			     shl ax, 1
-    573	2387  03 F0			     add si, ax
-    574	2389  8A 04			     mov al, [si] ; set	to first symbol
-    575	238B  26: 88 05			     mov es:byte ptr[di], al
-    576	238E  83 C7 02			     add di, 2
-    577	2391  83 E9 02			     sub cx, 2 ; remove	2 cause	we wont	draw the first and the last symbol in a	loop
-    578	2394  85 C9			     test cx, cx
-    579	2396  74 0B			     jz	@@LAST
-    580	2398  46			     inc si
-    581	2399  8A 04			     mov al, [si] ; set	to middle symbol
-    582	239B				     @@LOOP:
-    583	239B  26: 88 05				     mov es:byte ptr[di], al
-    584	239E  83 C7 02				     add di, 2
-    585	23A1  E2 F8				     loop @@LOOP
-    586	23A3				     @@LAST:
-    587	23A3  46			     inc si
-    588	23A4  8A 04			     mov al, [si] ; set	to last	symbol
-    589	23A6  26: 88 05			     mov es:byte ptr[di], al
-    590	23A9				     @@EXIT:
-    591	23A9  C3				     ret
-    592	23AA					     endp
-    593
-    594				     ;-------------
-    595				     ; RenderStringEscaped - renders CX	bytes from SI
-    596				     ;		      to ES starting from pos DX,
-    597				     ;		      with TEXT_COLOR color attribute.
-    598				     ;		      When encounters '$' character,
-    599				     ;		      shifts in	vram by	one line down,
-    600				     ;		      effectively mimicking a newline escape
-    601				     ; Input:  SI -> string to render
-    602				     ;	       CX =  number of bytes to	render
-    603				     ;	       DI =  vram offset in bytes
-    604				     ; Destr:  BX, DI, SI, CX
-    605				     ; Expect: CLD
-    606				     ;-------------
-    607	23AA			     RenderStringEscaped     proc
-    608	23AA  85 C9			     test cx, cx
-    609	23AC  74 18			     jz	@@EXIT
-    610	23AE  BB 0168r			     lea bx, TextColor
-    611	23B1  8A 27			 mov ah, [bx]
-    612	23B3  57			     push di
-    613	23B4				     @@LOOP_BODY:
-    614	23B4  AC				     lodsb
-    615	23B5  3C 24						     cmp al, '$'
-    616	23B7  75 09						     jne @@RENDER_CHAR
-    617	23B9  5F						     pop di
-    618	23BA  81 C7 00A0					     add di, ROW_LEN * 2
-    619	23BE  57						     push di
-    620	23BF  EB 02 90						     jmp @@SKIP_RENDER_CHAR
-    621	23C2							     @@RENDER_CHAR:
-    622	23C2  AB				     stosw
-    623	23C3							     @@SKIP_RENDER_CHAR:
-    624	23C3  E2 EF				     loop @@LOOP_BODY
-    625	23C5  5F			     pop di
-    626	23C6				     @@EXIT:
-    627	23C6  C3				     ret
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 12
+    571	2389  3C 02			     cmp al, 2
+    572	238B  76 02			     jna @@START_RENDER
+    573	238D  B0 03			     mov al, 3
+    574
+    575	238F				     @@START_RENDER:
+    576	238F  BE 2366r			     mov si, offset FrameBits
+    577	2392  03 F0			     add si, ax
+    578	2394  D1 E0			     shl ax, 1
+    579	2396  03 F0			     add si, ax
+    580	2398  8A 04			     mov al, [si] ; set	to first symbol
+    581	239A  26: 88 05			     mov es:byte ptr[di], al
+    582	239D  83 C7 02			     add di, 2
+    583	23A0  83 E9 02			     sub cx, 2 ; remove	2 cause	we wont	draw the first and the last symbol in a	loop
+    584	23A3  85 C9			     test cx, cx
+    585	23A5  74 0B			     jz	@@LAST
+    586	23A7  46			     inc si
+    587	23A8  8A 04			     mov al, [si] ; set	to middle symbol
+    588	23AA				     @@LOOP:
+    589	23AA  26: 88 05				     mov es:byte ptr[di], al
+    590	23AD  83 C7 02				     add di, 2
+    591	23B0  E2 F8				     loop @@LOOP
+    592	23B2				     @@LAST:
+    593	23B2  46			     inc si
+    594	23B3  8A 04			     mov al, [si] ; set	to last	symbol
+    595	23B5  26: 88 05			     mov es:byte ptr[di], al
+    596	23B8				     @@EXIT:
+    597	23B8  C3				     ret
+    598	23B9					     endp
+    599
+    600				     ;-------------
+    601				     ; RenderStringEscaped - renders CX	bytes from SI
+    602				     ;		      to ES starting from pos DX,
+    603				     ;		      with TEXT_COLOR color attribute.
+    604				     ;		      When encounters '$' character,
+    605				     ;		      shifts in	vram by	one line down,
+    606				     ;		      effectively mimicking a newline escape
+    607				     ; Input:  SI -> string to render
+    608				     ;	       CX =  number of bytes to	render
+    609				     ;	       DI =  vram offset in bytes
+    610				     ; Destr:  BX, DI, SI, CX
+    611				     ; Expect: CLD
+    612				     ;-------------
+    613	23B9			     RenderStringEscaped     proc
+    614	23B9  85 C9			     test cx, cx
+    615	23BB  74 18			     jz	@@EXIT
+    616	23BD  BB 0168r			     lea bx, TextColor
+    617	23C0  8A 27			 mov ah, [bx]
+    618	23C2  57			     push di
+    619	23C3				     @@LOOP_BODY:
+    620	23C3  AC				     lodsb
+    621	23C4  3C 24						     cmp al, '$'
+    622	23C6  75 09						     jne @@RENDER_CHAR
+    623	23C8  5F						     pop di
+    624	23C9  81 C7 00A0					     add di, ROW_LEN * 2
+    625	23CD  57						     push di
+    626	23CE  EB 02 90						     jmp @@SKIP_RENDER_CHAR
+    627	23D1							     @@RENDER_CHAR:
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 12
 register.asm
 
 
 
-    628	23C7					     endp
-    629
-    630	23C7  30 31 32 33 34 35	36+  HEX_ALPHA db '0123456789ABCDEF'
-    631	      37 38 39 41 42 43	44+
-    632	      45 46
-    633
-    634				     ;-------------
-    635				     ; Int16ToHex - takes int16	at AX and converts it to
-    636				     ;			       it's 4 char long	hex code
-    637				     ; Input:	     AX	= int16	to convert
-    638				     ; Output:	     AH	= first	hex byte
-    639				     ;			     AL	= second hex byte
-    640				     ;			     CH	= third	hex byte
-    641				     ;			     CL	= fourth hex byte
-    642				     ; Destr:	 BX
-    643				     ;-------------
-    644	23D7			     Int16ToHex	     proc
-    645	23D7  50				     push ax
-    646	23D8  8A E0				     mov ah, al
-    647	23DA  D0 E8 D0 E8 D0 E8	D0+		     shr al, 4
-    648	      E8
-    649	23E2  80 E4 0F				     and ah, 0fh
-    650
-    651	23E5  BB 23C7r				     mov bx, offset HEX_ALPHA
-    652	23E8  02 D8				     add bl, al
-    653	23EA  8A 07				     mov al, [bx]
-    654
-    655	23EC  BB 23C7r				     mov bx, offset HEX_ALPHA
-    656	23EF  02 DC				     add bl, ah
-    657	23F1  8A 27				     mov ah, [bx]
-    658	23F3  59				     pop cx
-    659	23F4  8A CD				     mov cl, ch
-    660	23F6  D0 E9 D0 E9 D0 E9	D0+		     shr cl, 4
-    661	      E9
-    662	23FE  80 E5 0F				     and ch, 0fh
-    663
-    664	2401  BB 23C7r				     mov bx, offset HEX_ALPHA
-    665	2404  02 D9				     add bl, cl
-    666	2406  8A 0F				     mov cl, [bx]
-    667
-    668	2408  BB 23C7r				     mov bx, offset HEX_ALPHA
-    669	240B  02 DD				     add bl, ch
-    670	240D  8A 2F				     mov ch, [bx]
-    671	240F  C3				     ret
-    672	2410					     endp
+    628	23D1  AB				     stosw
+    629	23D2							     @@SKIP_RENDER_CHAR:
+    630	23D2  E2 EF				     loop @@LOOP_BODY
+    631	23D4  5F			     pop di
+    632	23D5				     @@EXIT:
+    633	23D5  C3				     ret
+    634	23D6					     endp
+    635
+    636	23D6  30 31 32 33 34 35	36+  HEX_ALPHA db '0123456789ABCDEF'
+    637	      37 38 39 41 42 43	44+
+    638	      45 46
+    639
+    640				     ;-------------
+    641				     ; Int16ToHex - takes int16	at AX and converts it to
+    642				     ;			       it's 4 char long	hex code
+    643				     ; Input:	     AX	= int16	to convert
+    644				     ; Output:	     AH	= first	hex byte
+    645				     ;			     AL	= second hex byte
+    646				     ;			     CH	= third	hex byte
+    647				     ;			     CL	= fourth hex byte
+    648				     ; Destr:	 BX
+    649				     ;-------------
+    650	23E6			     Int16ToHex	     proc
+    651	23E6  50				     push ax
+    652	23E7  8A E0				     mov ah, al
+    653	23E9  D0 E8 D0 E8 D0 E8	D0+		     shr al, 4
+    654	      E8
+    655	23F1  80 E4 0F				     and ah, 0fh
+    656
+    657	23F4  BB 23D6r				     mov bx, offset HEX_ALPHA
+    658	23F7  02 D8				     add bl, al
+    659	23F9  8A 07				     mov al, [bx]
+    660
+    661	23FB  BB 23D6r				     mov bx, offset HEX_ALPHA
+    662	23FE  02 DC				     add bl, ah
+    663	2400  8A 27				     mov ah, [bx]
+    664	2402  59				     pop cx
+    665	2403  8A CD				     mov cl, ch
+    666	2405  D0 E9 D0 E9 D0 E9	D0+		     shr cl, 4
+    667	      E9
+    668	240D  80 E5 0F				     and ch, 0fh
+    669
+    670	2410  BB 23D6r				     mov bx, offset HEX_ALPHA
+    671	2413  02 D9				     add bl, cl
+    672	2415  8A 0F				     mov cl, [bx]
     673
-    674
-    675	2410			     EOP:
-    676
-    677				     end Start
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 13
+    674	2417  BB 23D6r				     mov bx, offset HEX_ALPHA
+    675	241A  02 DD				     add bl, ch
+    676	241C  8A 2F				     mov ch, [bx]
+    677	241E  C3				     ret
+    678	241F					     endp
+    679
+    680
+    681	241F			     EOP:
+    682
+    683				     end Start
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 13
 Symbol Table
 
 
@@ -745,51 +751,51 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "03/17/26"
 ??FILENAME			  Text	 "register"
-??TIME				  Text	 "20:55:49"
+??TIME				  Text	 "21:12:52"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
-@@CONSUME			  Near	 DGROUP:2292
-@@DONT_SET			  Near	 DGROUP:2347
+@@CONSUME			  Near	 DGROUP:22A1
+@@DONT_SET			  Near	 DGROUP:2356
 @@ENDOFMOVE			  Near	 DGROUP:218A
 @@ENDOFSAVEDIFFS		  Near	 DGROUP:20EF
-@@EXIT				  Near	 DGROUP:2356
-@@EXIT				  Near	 DGROUP:23A9
-@@EXIT				  Near	 DGROUP:23C6
+@@EXIT				  Near	 DGROUP:2365
+@@EXIT				  Near	 DGROUP:23B8
+@@EXIT				  Near	 DGROUP:23D5
 @@JMP_CHAIN_ORIGINAL		  Near	 DGROUP:2114
-@@JMP_CHAIN_ORIGINAL		  Near	 DGROUP:2233
+@@JMP_CHAIN_ORIGINAL		  Near	 DGROUP:2242
 @@JMP_CHAIN_SKIP		  Near	 DGROUP:2117
-@@LAST				  Near	 DGROUP:23A3
-@@LOOP				  Near	 DGROUP:239B
-@@LOOP_BODY			  Near	 DGROUP:23B4
-@@LOOP_CHECK			  Near	 DGROUP:2351
-@@LOOP_LINES			  Near	 DGROUP:233A
+@@LAST				  Near	 DGROUP:23B2
+@@LOOP				  Near	 DGROUP:23AA
+@@LOOP_BODY			  Near	 DGROUP:23C3
+@@LOOP_CHECK			  Near	 DGROUP:2360
+@@LOOP_LINES			  Near	 DGROUP:2349
 @@MODIFYMSGLOOP			  Near	 DGROUP:211F
-@@MOVEDOWNKEY			  Near	 DGROUP:2246
+@@MOVEDOWNKEY			  Near	 DGROUP:2255
 @@MOVELEFTKEY			  Near	 DGROUP:2214
-@@MOVERIGHTKEY			  Near	 DGROUP:2224
+@@MOVERIGHTKEY			  Near	 DGROUP:2228
 @@MOVETOVRAM			  Near	 DGROUP:215D
-@@MOVEUPKEY			  Near	 DGROUP:2236
+@@MOVEUPKEY			  Near	 DGROUP:2245
 @@NOTCTRLDOWN			  Near	 DGROUP:21B8
 @@NOTCTRLUP			  Near	 DGROUP:21C5
 @@NOTH				  Near	 DGROUP:21D9
 @@NOTHINGTORESTORE		  Near	 DGROUP:2181
-@@NOTHINGTORESTORE		  Near	 DGROUP:2287
+@@NOTHINGTORESTORE		  Near	 DGROUP:2296
 @@NOTJ				  Near	 DGROUP:21E5
 @@NOTK				  Near	 DGROUP:21F1
 @@NOTL				  Near	 DGROUP:21FD
 @@ORIGINAL			  Near	 DGROUP:218C
-@@ORIGINAL			  Near	 DGROUP:22A8
-@@RELEASESAVEBUFFER		  Near	 DGROUP:2279
-@@RENDER_CHAR			  Near	 DGROUP:23C2
+@@ORIGINAL			  Near	 DGROUP:22B7
+@@RELEASESAVEBUFFER		  Near	 DGROUP:2288
+@@RENDER_CHAR			  Near	 DGROUP:23D1
 @@RESTORE			  Near	 DGROUP:2173
 @@SAVE				  Near	 DGROUP:20ED
 @@SAVEDIFFS			  Near	 DGROUP:20D1
 @@SKIPSTORE			  Near	 DGROUP:216C
-@@SKIP_RENDER_CHAR		  Near	 DGROUP:23C3
-@@SKIP_RET			  Near	 DGROUP:2368
-@@START_RENDER			  Near	 DGROUP:2380
-@@SWITCHKEY			  Near	 DGROUP:2256
-@@TURNOFF			  Near	 DGROUP:2266
+@@SKIP_RENDER_CHAR		  Near	 DGROUP:23D2
+@@SKIP_RET			  Near	 DGROUP:2377
+@@START_RENDER			  Near	 DGROUP:238F
+@@SWITCHKEY			  Near	 DGROUP:2265
+@@TURNOFF			  Near	 DGROUP:2275
 @CODE				  Text	 DGROUP
 @CODESIZE			  Text	 0
 @CPU				  Text	 0101H
@@ -797,7 +803,7 @@ Symbol Name			  Type	 Value
 @DATA				  Text	 DGROUP
 @DATASIZE			  Text	 0
 @FILENAME			  Text	 REGISTER
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 14
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 14
 Symbol Table
 
 
@@ -808,8 +814,8 @@ Symbol Table
 @WORDSIZE			  Text	 2
 BACKGROUND			  Byte	 DGROUP:0167
 DRAWBUFFER			  Byte	 DGROUP:0169
-EOP				  Near	 DGROUP:2410
-FRAMEBITS			  Byte	 DGROUP:2357
+EOP				  Near	 DGROUP:241F
+FRAMEBITS			  Byte	 DGROUP:2366
 F_DL				  Number 00C8
 F_DR				  Number 00BC
 F_HOR				  Number 00CD
@@ -817,13 +823,13 @@ F_UL				  Number 00C9
 F_UR				  Number 00BB
 F_VER				  Number 00BA
 F_WS				  Number 0020
-HEX_ALPHA			  Byte	 DGROUP:23C7
-INT16TOHEX			  Near	 DGROUP:23D7
+HEX_ALPHA			  Byte	 DGROUP:23D6
+INT16TOHEX			  Near	 DGROUP:23E6
 ISCTRLDOWN			  Byte	 DGROUP:219D
 KEYHANDLER			  Near	 DGROUP:219E
 LINE_N				  Number 0004
 MAX_LINE			  Number 0019
-MSG				  Byte	 DGROUP:22B4
+MSG				  Byte	 DGROUP:22C3
 MSG_LEN				  Number 006F
 MSG_LENGTH_TOTAL		  Number 0007
 MSG_LENGTH_TOTAL_PADDED		  Number 000D
@@ -831,14 +837,14 @@ MSG_LINES_TOTAL			  Number 000E
 MSG_LINES_TOTAL_PADDED		  Number 0012
 ORIGINAL08OFFSET		  Word	 DGROUP:2199
 ORIGINAL08SEGMENT		  Word	 DGROUP:219B
-ORIGINAL09OFFSET		  Word	 DGROUP:22B0
-ORIGINAL09SEGMENT		  Word	 DGROUP:22B2
+ORIGINAL09OFFSET		  Word	 DGROUP:22BF
+ORIGINAL09SEGMENT		  Word	 DGROUP:22C1
 PAD_HOR				  Number 0002
 PAD_VER				  Number 0001
 POSITION			  Word	 DGROUP:0165
-RENDERFRAME			  Near	 DGROUP:2323
-RENDERFRAMELINE			  Near	 DGROUP:2363
-RENDERSTRINGESCAPED		  Near	 DGROUP:23AA
+RENDERFRAME			  Near	 DGROUP:2332
+RENDERFRAMELINE			  Near	 DGROUP:2372
+RENDERSTRINGESCAPED		  Near	 DGROUP:23B9
 ROW_LEN				  Number 0050
 SAVEBUFFER			  Byte	 DGROUP:1109
 SHIFT				  Number 000F
@@ -854,7 +860,7 @@ KEYPOPREGS
 KEYPUSHREGS
 UPDATEPOPREGS
 UPDATEPUSHREGS
-Turbo Assembler	 Version 4.1	    03/17/26 20:55:49	    Page 15
+Turbo Assembler	 Version 4.1	    03/17/26 21:12:52	    Page 15
 Symbol Table
 
 
@@ -864,5 +870,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  2410 Word	  Public  CODE
+  _TEXT				  16  241F Word	  Public  CODE
 
