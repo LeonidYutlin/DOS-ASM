@@ -52,6 +52,15 @@ Start:
 	mov es:[bx + 2], ax
 	sti
 
+	push cs
+	pop es
+	lea di, DrawBuffer
+	lea bx, Position
+	add di, [bx]
+	mov ax, MSG_LINES_TOTAL_PADDED
+	mov cx, MSG_LENGTH_TOTAL_PADDED
+	call RenderFrame
+
 	mov ax, 3100h
 	mov dx, offset EOP
 	shr dx, 4
@@ -120,13 +129,17 @@ UpdateHandler proc
 		test dx, dx
 		jz @@EndOfSaveDiffs
 		mov ax, es:[di]
+		cmp [Background], al
+		je @@EndOfSaveDiffs
+		cmp [TextColor], al
+		je @@EndOFSaveDiffs
 		cmp ax, dx
 		jne @@Save
 		jmp @@EndOfSaveDiffs
 		@@Save:
 		mov word ptr ds:[bx], ax
-		mov word ptr ds:[si], 0
 		@@EndOfSaveDiffs:
+		mov word ptr ds:[si], 0
 		add bx, 2
 		add si, 2
 		add di, 2
@@ -158,7 +171,6 @@ UpdateHandler proc
 	lea di, MSG + 3
 	@@ModifyMsgLoop:
 		mov ax, ss:[bx]
-		;mov ax, Position
 		push cx
 		push bx
 		call Int16ToHex
@@ -189,8 +201,11 @@ UpdateHandler proc
 	@@MoveToVRAM:
 		cmp word ptr ds:[si], 0
 		je @@Restore
-		mov ax, es:[di]
-		mov ds:[bx], ax
+		cmp word ptr ds:[bx], 0
+		jne @@SkipStore
+		mov ax, word ptr es:[di]
+		mov word ptr ds:[bx], ax
+		@@SkipStore:
 		movsw
 		add bx, 2
 		jmp @@EndOfMove
@@ -348,23 +363,23 @@ KeyHandler proc
 		jmp @@Consume
 		@@TurnOff:
 			mov Switch, 0
-			;cld
-			;mov cx, MAX_LINE * ROW_LEN
-			;lea si, SaveBuffer
-			;mov bx, VIDEOSEG
-			;push bx
-			;pop es
-			;xor di, di
-			;@@ReleaseSaveBuffer:
-				;mov ax, ds:[si]
-				;cmp ax, 0
-				;je @@NothingToRestore
-				;mov es:[di], ax
-				;mov word ptr ds:[si], 0
-				;@@NothingToRestore:
-				;add si, 2
-				;add di, 2
-		;loop @@ReleaseSaveBuffer
+			cld
+			mov cx, MAX_LINE * ROW_LEN
+			lea si, SaveBuffer
+			mov bx, VIDEOSEG
+			push bx
+			pop es
+			xor di, di
+			@@ReleaseSaveBuffer:
+				mov ax, ds:[si]
+				cmp ax, 0
+				je @@NothingToRestore
+				mov es:[di], ax
+				mov word ptr ds:[si], 0
+				@@NothingToRestore:
+				add si, 2
+				add di, 2
+		loop @@ReleaseSaveBuffer
 		jmp @@Consume
 
 	@@Consume:

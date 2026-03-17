@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    03/02/26 16:27:47	    Page 1
+Turbo Assembler	 Version 4.1	    03/17/26 20:53:07	    Page 1
 table.asm
 
 
@@ -60,7 +60,7 @@ table.asm
      55	0156  BB 02C2			     mov bx, (LINE + 1)	* 2d * 80d + (OFFSET__ + 1) * 2d ; base	pos
      56	0159  8B C1			     mov ax, cx
      57	015B  BA 0010			     mov dx, SIZE__
-Turbo Assembler	 Version 4.1	    03/02/26 16:27:47	    Page 2
+Turbo Assembler	 Version 4.1	    03/17/26 20:53:07	    Page 2
 table.asm
 
 
@@ -83,7 +83,7 @@ table.asm
      73	0185  CD 21			     int 21h
      74
      75				     end Start
-Turbo Assembler	 Version 4.1	    03/02/26 16:27:47	    Page 3
+Turbo Assembler	 Version 4.1	    03/17/26 20:53:07	    Page 3
 Symbol Table
 
 
@@ -91,9 +91,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "03/02/26"
+??DATE				  Text	 "03/17/26"
 ??FILENAME			  Text	 "table	  "
-??TIME				  Text	 "16:27:47"
+??TIME				  Text	 "20:53:07"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
