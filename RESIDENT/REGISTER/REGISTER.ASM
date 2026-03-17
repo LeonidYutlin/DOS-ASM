@@ -95,28 +95,51 @@ TextColor db 7ch
 DrawBuffer db MAX_LINE * ROW_LEN * 2 dup(?)
 SaveBuffer db MAX_LINE * ROW_LEN * 2 dup(?)
 
-ClearDrawBuffer macro
-	lea di, DrawBuffer
-	xor ax, ax
-	mov cx, MAX_LINE * ROW_LEN
-	rep stosw
-endm
-
 UpdateHandler proc
 	UpdatePushRegs
 
 	push cs
 	pop ds
+	mov bx, VIDEOSEG
+	push bx
+	pop es
 
 	lea bx, Switch
 	cmp byte ptr [bx], 1
 	jne @@JMP_CHAIN_Original
 
+	cld
+	; save differences to save buffer
+	mov cx, MAX_LINE * ROW_LEN
+	lea si, DrawBuffer
+	xor di, di
+	lea bx, SaveBuffer
+	cld
+	@@SaveDiffs:
+		mov dx, ds:[si]
+		test dx, dx
+		jz @@EndOfSaveDiffs
+		mov ax, es:[di]
+		cmp ax, dx
+		jne @@Save
+		jmp @@EndOfSaveDiffs
+		@@Save:
+		mov word ptr ds:[bx], ax
+		mov word ptr ds:[si], 0
+		@@EndOfSaveDiffs:
+		add bx, 2
+		add si, 2
+		add di, 2
+	loop @@SaveDiffs
+
+	; clear draw buffer
+	;lea di, DrawBuffer
+	;xor ax, ax
+	;mov cx, MAX_LINE * ROW_LEN
+	;rep stosw
+
 	push cs
 	pop es
-
-	cld
-	ClearDrawBuffer
 
 	lea di, DrawBuffer
 	lea bx, Position
@@ -134,16 +157,17 @@ UpdateHandler proc
 	mov bx, sp
 	lea di, MSG + 3
 	@@ModifyMsgLoop:
-	mov ax, ss:[bx]
-	push cx
-	push bx
-	call Int16ToHex
-	pop bx
-	mov [di],     cx
-	mov [di + 2], ax
-	add di, MSG_LENGTH_TOTAL + 1 ; + 1 for '$'
-	add bx, 2
-	pop cx
+		mov ax, ss:[bx]
+		;mov ax, Position
+		push cx
+		push bx
+		call Int16ToHex
+		pop bx
+		mov [di],     cx
+		mov [di + 2], ax
+		add di, MSG_LENGTH_TOTAL + 1 ; + 1 for '$'
+		add bx, 2
+		pop cx
 	loop @@ModifyMsgLoop
 
 	lea di, DrawBuffer
@@ -171,9 +195,9 @@ UpdateHandler proc
 		add bx, 2
 		jmp @@EndOfMove
 		@@Restore:
-		mov ax, ds:[bx]
-		cmp ax, 0
+		cmp word ptr ds:[bx], 0
 		je @@NothingToRestore
+		mov ax, ds:[bx]
 		mov es:[di], ax
 		mov word ptr ds:[bx], 0
 		@@NothingToRestore:
@@ -182,7 +206,6 @@ UpdateHandler proc
 		add di, 2
 		@@EndOfMove:
 	loop @@MoveToVRAM
-
 
 	@@Original:
 
@@ -288,15 +311,15 @@ KeyHandler proc
 	@@MoveLeftKey:
 		lea bx, Position
 		mov cx, [bx]
-		test cx, cx
-		jz @@JMP_CHAIN_Original
+		cmp cx, 0
+		jbe @@JMP_CHAIN_Original
 		sub word ptr [bx], 2
 		jmp @@Consume
 
 	@@MoveRightKey:
 		lea bx, Position
 		cmp word ptr [bx], ((MAX_LINE - MSG_LINES_TOTAL_PADDED + 1) * ROW_LEN - MSG_LENGTH_TOTAL_PADDED) * 2
-		je @@Original
+		jae @@Original
 		add word ptr [bx], 2
 		jmp @@Consume
 
@@ -325,23 +348,23 @@ KeyHandler proc
 		jmp @@Consume
 		@@TurnOff:
 			mov Switch, 0
-			cld
-			mov cx, MAX_LINE * ROW_LEN
-			lea si, SaveBuffer
-			mov bx, VIDEOSEG
-			push bx
-			pop es
-			xor di, di
-			@@ReleaseSaveBuffer:
-				mov ax, ds:[si]
-				cmp ax, 0
-				je @@NothingToRestore
-				mov es:[di], ax
-				mov word ptr ds:[si], 0
-				@@NothingToRestore:
-				add si, 2
-				add di, 2
-		loop @@ReleaseSaveBuffer
+			;cld
+			;mov cx, MAX_LINE * ROW_LEN
+			;lea si, SaveBuffer
+			;mov bx, VIDEOSEG
+			;push bx
+			;pop es
+			;xor di, di
+			;@@ReleaseSaveBuffer:
+				;mov ax, ds:[si]
+				;cmp ax, 0
+				;je @@NothingToRestore
+				;mov es:[di], ax
+				;mov word ptr ds:[si], 0
+				;@@NothingToRestore:
+				;add si, 2
+				;add di, 2
+		;loop @@ReleaseSaveBuffer
 		jmp @@Consume
 
 	@@Consume:
